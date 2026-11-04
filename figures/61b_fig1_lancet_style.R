@@ -29,9 +29,15 @@ VACS <- c("KE", "LS", "MW", "MZ", "NM", "SZ", "TZ", "ZW")
 af <- rnaturalearth::ne_countries(scale = 50, continent = "Africa", returnclass = "sf"); af$iso3 <- ifelse(af$iso_a3 == "-99", af$adm0_a3, af$iso_a3)
 m <- merge(af, as.data.frame(cty), by = "iso3", all.x = TRUE)
 cent <- suppressWarnings(st_point_on_surface(m[!is.na(m$rounds), ])); vac <- m[m$iso3 %in% ISO3[VACS], ]
+# small countries whose round count is unreadable inside the border: number placed nearby with a pointer
+CALLOUT <- data.frame(iso3 = c("RWA", "BDI"), lx = c(25.8, 25.6), ly = c(2.6, -6.6))
+CALL <- merge(CALLOUT, data.frame(iso3 = cent$iso3, rounds = cent$rounds, px = st_coordinates(cent)[, 1], py = st_coordinates(cent)[, 2]), by = "iso3")
 pA <- ggplot(m) + geom_sf(aes(fill = pct), colour = "white", linewidth = 0.15) +
   geom_sf(data = vac, fill = NA, colour = "black", linewidth = 0.55) +
-  geom_sf_text(data = cent, aes(label = rounds), size = 2.4, family = FONT) +
+  geom_sf_text(data = cent[!cent$iso3 %in% CALLOUT$iso3, ], aes(label = rounds), size = 2.4, family = FONT) +
+  geom_segment(data = CALL, aes(x = lx, y = ly, xend = px, yend = py), linewidth = 0.25, colour = "black") +
+  geom_point(data = CALL, aes(px, py), size = 0.35) +
+  geom_label(data = CALL, aes(lx, ly, label = rounds), size = 2.4, family = FONT, label.size = 0, label.padding = unit(0.08, "lines"), fill = "white") +
   scale_fill_gradient(low = "#EEF0F7", high = NAVY, na.value = "#E6E6E6", limits = c(15, 50), breaks = c(20, 30, 40, 50),
                       name = "Sought any\nhelp, %") +
   coord_sf(xlim = c(-18, 52), ylim = c(-35, 25)) + theme_void(base_size = 9, base_family = FONT) +
