@@ -23,11 +23,11 @@ for (o in names(OUT)) {
     geom_point(data = e, aes(year, 100 * p), shape = 21, fill = "white", colour = "black", size = 1.4, stroke = 0.4) +
     geom_text(data = sl, aes(x = 2004, y = YR[2], label = txt), hjust = 0, vjust = 1, family = FONT, size = 2.2, lineheight = 0.9) +
     facet_wrap(~panel, ncol = 5) +
-    scale_x_continuous(breaks = c(2005, 2015, 2025), limits = c(2003.5, 2026)) + scale_y_continuous(trans = LOGIT, breaks = BRK, labels = function(b) gsub(".", "·", format(b, drop0trailing = TRUE, trim = TRUE), fixed = TRUE), limits = YR, oob = scales::squish, expand = expansion(mult = c(0.01, 0.01))) +
+    scale_x_continuous(breaks = seq(2005, 2025, 2), limits = c(2003.5, 2026)) + scale_y_continuous(trans = LOGIT, breaks = BRK, labels = function(b) gsub(".", "·", format(b, drop0trailing = TRUE, trim = TRUE), fixed = TRUE), limits = YR, oob = scales::squish, expand = expansion(mult = c(0.01, 0.01))) +
     labs(x = "Year of survey", y = paste0("Young women with violence who ", OUT[[o]], ", % (logit scale)")) +
     theme_minimal(base_family = FONT, base_size = 9) +
     theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), strip.text = element_text(face = "bold", size = 8),
-          axis.text = element_text(size = 7), axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3))
+          axis.text = element_text(size = 7), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 6.5), axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3))
   nr <- ceiling(length(ks) / 5)
   ragg::agg_png(file.path(FG, sprintf("figS_country_trends_%s.png", o)), width = 7.2, height = 1.55 * nr + 0.5, units = "in", res = 300, background = "white"); print(g); invisible(dev.off())
   cat(o, length(ks), "countries\n") }

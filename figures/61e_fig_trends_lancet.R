@@ -39,12 +39,12 @@ g <- ggplot() +
   geom_text(data = lab, aes(x = 2004.3, y = ymax, label = txt), hjust = 0, vjust = 1, family = FONT, size = 2.6, lineheight = 0.9) +
   facet_grid(outcome ~ scope, scales = "free_y", switch = "y") +
   scale_size_area(max_size = 2.6, guide = "none") +
-  scale_x_continuous(breaks = c(2005, 2015, 2025), labels = c("2005", "2015", "2025"), limits = c(2003.5, 2026)) +
+  scale_x_continuous(breaks = seq(2005, 2025, 2), limits = c(2003.5, 2026)) +
   scale_y_continuous(trans = LOGIT, breaks = BRK, labels = function(b) gsub(".", "·", format(b, drop0trailing = TRUE, trim = TRUE), fixed = TRUE), expand = expansion(mult = c(0.01, 0.01))) +
   labs(x = "Year of survey", y = "Young women with violence, % (logit scale)") +
   theme_minimal(base_family = FONT, base_size = 9) +
   theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), strip.placement = "outside",
         strip.text = element_text(face = "bold", size = 9), axis.text = element_text(size = 7.5), panel.spacing = unit(0.5, "lines"),
-        axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3))
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 6.5), axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3))
 ragg::agg_png(file.path(FG, "fig_trends_lancet.png"), width = 7.2, height = 7.8, units = "in", res = 300, background = "white"); print(g); invisible(dev.off())
 cat("fig_trends_lancet.png written; max prediction band", PB[, max(pred_hi)], "\n")
