@@ -29,8 +29,9 @@ VACS <- c("KE", "LS", "MW", "MZ", "NM", "SZ", "TZ", "ZW")
 af <- rnaturalearth::ne_countries(scale = 50, continent = "Africa", returnclass = "sf"); af$iso3 <- ifelse(af$iso_a3 == "-99", af$adm0_a3, af$iso_a3)
 m <- merge(af, as.data.frame(cty), by = "iso3", all.x = TRUE)
 cent <- suppressWarnings(st_point_on_surface(m[!is.na(m$rounds), ])); vac <- m[m$iso3 %in% ISO3[VACS], ]
+st_geometry(cent)[cent$iso3 == "ZAF"] <- st_sfc(st_point(c(22.8, -30.6)), crs = st_crs(cent))   # South Africa: label moved west, away from Lesotho
 # small countries whose round count is unreadable inside the border: number placed nearby with a pointer
-CALLOUT <- data.frame(iso3 = c("RWA", "BDI", "COM"), lx = c(25.8, 25.6, 49.5), ly = c(2.6, -6.6, -7.6))
+CALLOUT <- data.frame(iso3 = c("RWA", "BDI", "COM", "GMB", "TGO", "LSO"), lx = c(25.8, 25.6, 49.5, -17.4, 1.2, 33.8), ly = c(2.6, -6.6, -7.6, 11.2, 3.2, -31.6))
 CALL <- merge(CALLOUT, data.frame(iso3 = cent$iso3, rounds = cent$rounds, px = st_coordinates(cent)[, 1], py = st_coordinates(cent)[, 2]), by = "iso3")
 # Comoros: islands too small to see at this scale, so ring the archipelago (bounding-box centre) and name it in the label
 kmb <- st_bbox(m[m$iso3 == "COM", ]); CALL[CALL$iso3 == "COM", c("px", "py")] <- c(mean(kmb[c("xmin", "xmax")]), mean(kmb[c("ymin", "ymax")]))
