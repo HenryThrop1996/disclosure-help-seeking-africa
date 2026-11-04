@@ -3,7 +3,7 @@
 #   B6 one-stage checks; B7 generalised VIF; B8 help sources by region; B11 formal_wide.
 # Data preparation is taken verbatim from 50_disclosure_predictors.R (youth, continuous age), as in script 69.
 suppressMessages({library(data.table); library(fixest); library(lme4); library(car)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); OUT2 <- file.path(ROOT, "outputs/tables/P38_review"); dir.create(OUT2, showWarnings = FALSE)
+ROOT <- Sys.getenv("RR"); OUT2 <- file.path(ROOT, "outputs/tables/P38_review"); dir.create(OUT2, showWarnings = FALSE)
 s50 <- readLines(file.path(ROOT, "analysis/50_disclosure_predictors.R"))
 Sys.setenv(P33_SCOPE = "youth", AGE_CONT = "1")
 eval(parse(text = s50[2:(grep("^V <- fread", s50)[1] - 1)]))                     # builds D exactly as the primary analysis

@@ -3,7 +3,7 @@ Usage: python3 analysis/82_make_readme.py <repo_dir>
 """
 import sys, re, numpy as np, pandas as pd
 from pathlib import Path
-R = Path.home() / "Documents/OMS DHS Births Climate Policy"; V3 = R / "outputs/tables/P33_youth_v3"; P38 = R / "outputs/tables/P38_review"; P37 = R / "outputs/tables/P37_harmonised"
+R = Path(__import__("os").environ["RR"]); V3 = R / "outputs/tables/P33_youth_v3"; P38 = R / "outputs/tables/P38_review"; P37 = R / "outputs/tables/P37_harmonised"
 REPO = Path(sys.argv[1])
 f1 = lambda x: f"{x:.1f}"; f2 = lambda x: f"{x:.2f}"; ci = lambda o, l, h: f"{f2(o)} ({f2(l)}–{f2(h)})"; pc = lambda r: f"{f1(r.pct)}% ({f1(r.lo)}–{f1(r.hi)})"
 
@@ -51,7 +51,7 @@ m2 = MC[MC.model == "M2"]; m0 = MC[MC.model == "M0"]
 n_m1 = int(((MC.model == "M1") & (MC.elpd_diff_vs_M2 > 2 * MC.se_diff_vs_M2)).sum())
 mx_m1 = MC[(MC.model == "M1") & (MC.elpd_diff_vs_M2 > 2 * MC.se_diff_vs_M2)].elpd_diff_vs_M2.max()
 pb = sorted(x for x in m2[["pB_chi2", "pB_sd", "pB_max", "pB_min"]].values.ravel() if x >= 0.05)
-hashes = [l.split("  ", 2) for l in (R / "docs/preregistration/PREREGISTRATION_hashes.log").read_text().splitlines() if re.search(r"PREREGISTRATION_3[3789]", l) and not re.search(r"climate|A8\.1 ", l, re.I)]   # climate work is ongoing: not listed
+hashes = [l.split("  ", 2) for l in (R / "docs/preregistration/PREREGISTRATION_hashes.log").read_text().splitlines() if re.search(r"PREREGISTRATION_3[3789]|PREREGISTRATION_42|CORRECTION_5", l) and not re.search(r"climate|A8\.1 ", l, re.I)]   # climate work is ongoing: not listed
 
 md = f"""# Help-seeking after violence among adolescents and young people in sub-Saharan Africa
 
@@ -59,7 +59,7 @@ Code for a multi-country analysis of disclosure and help-seeking after physical 
 using **{nS} Demographic and Health Surveys (DHS) from {nC} countries** and **eight Violence Against Children and Youth Surveys (VACS)**.
 
 > **Status:** manuscript in preparation (Oxford Martin Programme on Climate and Child Health / Accelerate Hub, University of Oxford).
-> Results below are from the current pre-registered analysis and may change before publication. The survey data are **not** included (see [Data](#2-data)).
+> Results below are from the current pre-registered analysis, including **Correction 5** (November 2026: country models with separation refitted with Firth's penalised likelihood; seven DHS surveys without GPS data added; zero-event surveys in the trend inputs given a continuity correction), and may change before publication. The survey data are **not** included (see [Data](#2-data)).
 
 **Contents:** [1 Questions](#1-questions) · [2 Data](#2-data) · [3 Pipeline](#3-analysis-pipeline) · [4 Model](#4-model-construction) · [5 Results](#5-results) · [6 Reproduce](#6-repository-structure-and-how-to-reproduce) · [7 Pre-registration](#7-pre-registration) · [8 Software](#8-software)
 
@@ -223,6 +223,10 @@ flowchart TD
 | 12 Manuscript | [`71_build_latex_manuscript.py`](manuscript/71_build_latex_manuscript.py) | manuscript |
 | 12 Manuscript | [`manuscript_appendix.py`](manuscript/manuscript_appendix.py) | appendix tables |
 | 13 Verify | [`72_verify_manuscript_numbers.py`](manuscript/72_verify_manuscript_numbers.py) | independent number check |
+| Correction 5 | [`firth_helper.R`](analysis/firth_helper.R) | Firth refit of separated country models (sourced by every stage 1 script) |
+| Perpetrator × type | [`41e_perpetrator_type.py`](build/41e_perpetrator_type.py), [`95_p42_cascade_by_type.R`](analysis/95_p42_cascade_by_type.R), [`96_p42_country_models.R`](analysis/96_p42_country_models.R), [`97_p42_pool.py`](pooling/97_p42_pool.py), [`61f_fig_cascade_by_type_lancet.R`](figures/61f_fig_cascade_by_type_lancet.R) | disclosure by perpetrator and type of violence (pre-registration 42) |
+| Uncertainty | [`84b_trend_predictive.py`](pooling/84b_trend_predictive.py), [`84c_cascade_pooled.py`](pooling/84c_cascade_pooled.py), [`61g_fig_country_trends.R`](figures/61g_fig_country_trends.R) | prediction bands, country trajectories, typical-country cascade |
+| Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
 
@@ -313,7 +317,7 @@ Code: [`harmonised/73_p37_country_models.R`](harmonised/73_p37_country_models.R)
 | Sought formal help | {pc(cas('formal'))} | {f1(pw('formal').pct)}% | {f1(cas('formal', 'region', 'West').pct)}% | {f1(cas('formal', 'region', 'Central').pct)}% | {f1(cas('formal', 'region', 'East').pct)}% | {f1(cas('formal', 'region', 'Southern').pct)}% |
 
 Help came mostly from family ({hs('src_family'):.0f}%), friends or neighbours ({hs('src_friends_neighbours'):.0f}%) and the partner's family ({hs('src_partner_family'):.0f}%);
-{hs('src_police'):.1f}% went to the police and {hs('src_health'):.1f}% to a health worker.
+{hs('src_police'):.1f}% went to the police and {hs('src_health'):.1f}% to a health worker (percentages of those who sought help).
 In VACS, after sexual violence, {f1(vac('tell', 'girls').pct)}% of girls and {f1(vac('tell', 'boys').pct)}% of boys told someone, and {f1(vac('sought', 'girls').pct)}% and {f1(vac('sought', 'boys').pct)}% sought help.
 
 <p align="center"><img src="docs/figures/fig_cascade_forest_lancet.png" width="760" alt="Disclosure cascade by country"></p>
@@ -345,7 +349,7 @@ in crude, fully adjusted and reduced socio-demographic models.
 {hrow('told', 'hh_female', 'Told anyone · female household head')}
 {hrow('sought_any', 'hh_female', 'Sought help · female household head')}
 
-### 5.5 Help-seeking has fallen since 2005
+### 5.5 Seeking help has fallen, mainly in the past decade
 
 Survey-level estimates for all {nS} surveys, pooled with a Bayesian hierarchical meta-regression (country intercepts and slopes nested in regional and overall means, survey-level residual), with a frequentist random-effects meta-regression as a formal test:
 
@@ -359,7 +363,7 @@ $$y_{{cs}}\\sim\\mathcal N(a_c+b_c t_{{cs}},\\ se_{{cs}}^2+\\sigma_e^2),\\quad b
 
 Code: [`analysis/83_trend_survey_estimates.R`](analysis/83_trend_survey_estimates.R), [`pooling/84_trend_model.py`](pooling/84_trend_model.py), [`analysis/85_trend_metafor.R`](analysis/85_trend_metafor.R), figure [`figures/61e_fig_trends_lancet.R`](figures/61e_fig_trends_lancet.R).
 
-Within countries, adjusted for the women's characteristics, the odds of seeking any help fell by {100 * (1 - TR[(TR.model == "adjusted") & (TR.outcome == "sought_any")].OR.iloc[0]):.0f}% per decade ({tr('sought_any')}; {tr6} in DHS phase 6 or later).
+Within countries, the trend adjusted for the women's characteristics was similar but less certain ({tr('sought_any')}; {tr6} in DHS phase 6 or later). The fall was not linear (post-hoc): in countries with repeated surveys the odds changed little before 2016 and fell from 2013 onwards, possibly with DHS questionnaire phases 7 and 8. Formal help, the registered primary outcome, did not fall.
 Southern Africa has no repeated surveys, so its trend is not estimated.
 
 <p align="center"><img src="docs/figures/fig_trends_lancet.png" width="760" alt="Trends in disclosure and help-seeking 2004-2025"></p>
@@ -388,7 +392,7 @@ Southern Africa has no repeated surveys, so its trend is not estimated.
 | `manuscript/` | `71_build_latex_manuscript.py`, `manuscript_appendix.py`, `72_verify_manuscript_numbers.py` | manuscript, appendix, independent number check |
 | `methods_walkthrough/` | `76_step_by_step_guide_codes_weights.Rmd`, `75_disclosure_walkthrough_brms.Rmd` | teaching versions: survey codes and weights; the full analysis in tidyverse + brms |
 
-Paths assume the project folder `~/Documents/OMS DHS Births Climate Policy` with the DHS files in `data/raw/dhs_ir/`; edit `ROOT` at the top of each script to use another location.
+Scripts are run from the project folder, with all scripts placed in its `analysis/` folder (the repository groups them by step), the DHS files in `data/raw/dhs_ir/` and two environment variables: `RR` (project folder) and `FIRTH` (path to `firth_helper.R`), e.g. `export RR=$PWD FIRTH=$PWD/analysis/firth_helper.R P33_SCOPE=youth AGE_CONT=1`. VACS files are read from `~/Documents/OMS VACS Climate Violence`.
 
 ## 7. Pre-registration
 

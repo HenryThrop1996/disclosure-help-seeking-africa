@@ -1,7 +1,7 @@
 # 69_southern_africa_pooled.R - exploratory (pre-reg 33 note, 2026-10-26): one pooled model for Southern Africa's young women (LS, NM, ZA),
 # because no Southern country reaches the country-model threshold. Same covariates as the youth v3 models (age in years).
-suppressMessages({library(data.table); library(fixest)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy")
+suppressMessages({library(data.table); library(fixest)}); source(Sys.getenv("FIRTH"))
+ROOT <- Sys.getenv("RR")
 s50 <- readLines(file.path(ROOT, "analysis/50_disclosure_predictors.R"))
 Sys.setenv(P33_SCOPE = "youth", AGE_CONT = "1")
 eval(parse(text = s50[2:(grep("^V <- fread", s50)[1] - 1)]))                    # data build verbatim from script 50 (youth, continuous age)

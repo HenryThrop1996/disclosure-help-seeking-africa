@@ -1,11 +1,11 @@
 # 50_disclosure_predictors.R - Pre-registration 33 (run once): disclosure cascade, predictors, regional agreement, replication, climate moderation.
-suppressMessages({library(data.table); library(fixest)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); PIPE <- path.expand("~/Documents/OMS Climate Exposure Pipeline/outputs")
+suppressMessages({library(data.table); library(fixest)}); source(Sys.getenv("FIRTH"))
+ROOT <- Sys.getenv("RR"); PIPE <- path.expand("~/Documents/OMS Climate Exposure Pipeline/outputs")
 SCOPE <- Sys.getenv("P33_SCOPE", "all")   # AMENDMENT A6: "youth" = DHS women 15-24 (aligned with VACS 13-24); "all" = registered 15-49
 AGECONT <- Sys.getenv("AGE_CONT", "0") == "1"   # AMENDMENT A8.3: age in years (youth: centred 20; VACS: centred 18)
 OUT <- file.path(ROOT, "outputs/tables", if (SCOPE == "youth") (if (AGECONT) "P33_youth_v3" else "P33_youth") else "P33"); dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 REG <- c(BF = "West", BJ = "West", CI = "West", GH = "West", GM = "West", GN = "West", LB = "West", ML = "West", MR = "West", NG = "West", SL = "West", SN = "West", TG = "West", NI = "West",
-         AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
+         ST = "Central", AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
          BU = "East", ET = "East", KE = "East", KM = "East", MD = "East", MW = "East", MZ = "East", RW = "East", TZ = "East", UG = "East", ZM = "East", ZW = "East",
          LS = "Southern", NM = "Southern", SZ = "Southern", ZA = "Southern")
 SPLIT <- fread(file.path(ROOT, "data/derived/split_countries.csv")); SET <- setNames(SPLIT$set, SPLIT$country)
@@ -56,9 +56,9 @@ for (k in sort(unique(V$country))) { vk <- V[country == k]
     if (is.null(m)) next; b <- coef(m)[-1]; s <- se(m)[-1]; ok <- is.finite(s) & s < 5
     CE[[length(CE) + 1]] <- data.table(source = "VACS", model = toupper(t), outcome = o, country = k, term = names(b)[ok], est = b[ok], se = s[ok], n = nobs(m)) } }
 CE <- rbindlist(CE); CE[, `:=`(region = REG[country], set = SET[country])]
-EV <- rbind(D[, .(source = "DHS", formal = sum(formal == 1, na.rm = TRUE), sought_any = sum(sought_any == 1, na.rm = TRUE), told = sum(told == 1, na.rm = TRUE)), by = country] |> melt(id.vars = c("source", "country"), variable.name = "outcome", value.name = "events"),
-            rbindlist(lapply(c("tell", "sought", "knewplace", "recvdserv"), function(o) V[, .(source = "VACS", outcome = o, events = sum(sv_victim == 1 & get(paste0("sv_", o)) == 1, na.rm = TRUE) + sum(pv_victim == 1 & get(paste0("pv_", o)) == 1, na.rm = TRUE)), by = country])), fill = TRUE)
-CE <- merge(CE, EV, by = c("source", "country", "outcome"), all.x = TRUE)
+EV <- rbindlist(list(D[, .(source = "DHS", formal = sum(formal == 1, na.rm = TRUE), sought_any = sum(sought_any == 1, na.rm = TRUE), told = sum(told == 1, na.rm = TRUE)), by = country] |> melt(id.vars = c("source", "country"), variable.name = "outcome", value.name = "events")), fill = TRUE)   # C5.2: VACS events by type added below
+EVV <- rbindlist(lapply(c("SV", "PV"), function(M) rbindlist(lapply(c("tell", "sought", "knewplace", "recvdserv"), function(o) { t <- tolower(M); V[get(paste0(t, "_victim")) == 1, .(source = "VACS", model = M, outcome = o, events = sum(get(paste0(t, "_", o)) == 1, na.rm = TRUE)), by = country] }))))
+CE <- merge(CE, EV[, .(source, country, outcome, events_d = events)], by = c("source", "country", "outcome"), all.x = TRUE); CE <- merge(CE, EVV[, .(source, model, country, outcome, events_v = events)], by = c("source", "model", "country", "outcome"), all.x = TRUE); CE[, events := fifelse(source == "DHS", events_d, events_v)]; CE[, c("events_d", "events_v") := NULL]
 fwrite(CE, file.path(OUT, "A2_country_estimates.csv"))
 cat(sprintf("country estimates: %d rows; DHS countries with formal-help main model: %d\n", nrow(CE), CE[source == "DHS" & model == "main" & outcome == "formal", uniqueN(country)]))
 # ================= A2/A3 BAYESIAN HIERARCHICAL POOLING (theta_c ~ N(mu_r, tau^2); mu_r ~ N(mu, omega^2); mu ~ N(0,1); tau, omega ~ HN(0,0.5)) =================

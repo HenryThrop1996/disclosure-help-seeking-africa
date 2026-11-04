@@ -8,7 +8,7 @@ Output: data/derived/women_disclosure.csv.gz
 """
 import sys, zipfile, io, re, numpy as np, pandas as pd
 from pathlib import Path
-ROOT = Path.home() / "Documents/OMS DHS Births Climate Policy"
+ROOT = __import__("pathlib").Path(__import__("os").environ["RR"])
 pairs = pd.read_csv(ROOT / "data/derived/ir_ge_pairs.csv"); pairs = pairs[pairs.usable]
 sp = pd.read_csv(ROOT / "data/derived/split_countries.csv"); HELD = "--heldout" in sys.argv
 DISC = set(sp[sp.set == ("held-out" if HELD else "discovery")].country)
@@ -25,7 +25,7 @@ for _, r in pairs.iterrows():
     if r.country not in DISC: continue
     sv = f"{r.country}_{str(r.years)[:4]}_{r.ir[4:6]}"
     f = ROOT / "data/raw/dhs_ir" / r.ir
-    if not f.exists(): f = Path.home() / "Downloads" / r.ir
+    if not f.exists(): f = Path.home() / "Documents/Data/raw_surveys" / r.ir
     z = zipfile.ZipFile(f); raw = z.read([n for n in z.namelist() if n.lower().endswith(".dta")][0])
     with pd.io.stata.StataReader(io.BytesIO(raw)) as rd:
         lab = rd.variable_labels(); vl = rd.value_labels(); lbl = dict(zip(rd._varlist, rd._lbllist))

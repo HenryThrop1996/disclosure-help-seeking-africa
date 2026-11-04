@@ -3,7 +3,7 @@
 # proportion to its female population aged 15-24 (WorldPop R2025A, 1 km, survey year; years before 2015 use 2015, the first available),
 # and a country's rounds share its weight equally:  w* = d005/1e6 x (N_cs / R_c) / sum over the survey of d005/1e6.
 suppressMessages({library(data.table); library(terra); library(survey)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); OUT2 <- file.path(ROOT, "outputs/tables/P38_review")
+ROOT <- Sys.getenv("RR"); OUT2 <- file.path(ROOT, "outputs/tables/P38_review")
 WP <- path.expand("~/Documents/OMS Climate Exposure Pipeline/data/raw/worldpop")
 s50 <- readLines(file.path(ROOT, "analysis/50_disclosure_predictors.R")); Sys.setenv(P33_SCOPE = "youth", AGE_CONT = "1")
 eval(parse(text = s50[2:(grep("^V <- fread", s50)[1] - 1)]))

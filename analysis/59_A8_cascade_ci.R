@@ -2,9 +2,9 @@
 # Weighted, PSU-within-survey clustering, logit-scale intervals (svyciprop, method = "logit").
 suppressMessages({library(data.table); library(survey)})
 options(survey.lonely.psu = "adjust")
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); OUT <- file.path(ROOT, "outputs/tables/P33_youth_v3")
+ROOT <- Sys.getenv("RR"); OUT <- file.path(ROOT, "outputs/tables/P33_youth_v3")
 REG <- c(BF = "West", BJ = "West", CI = "West", GH = "West", GM = "West", GN = "West", LB = "West", ML = "West", MR = "West", NG = "West", SL = "West", SN = "West", TG = "West",
-         AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
+         ST = "Central", AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
          BU = "East", ET = "East", KE = "East", KM = "East", MD = "East", MW = "East", MZ = "East", RW = "East", TZ = "East", UG = "East", ZM = "East", ZW = "East",
          LS = "Southern", NM = "Southern", SZ = "Southern", ZA = "Southern")
 W <- rbind(fread(file.path(ROOT, "data/derived/women_disclosure.csv.gz")), fread(file.path(ROOT, "data/derived/women_disclosure_heldout.csv.gz")), fill = TRUE)

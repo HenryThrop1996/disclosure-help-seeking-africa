@@ -6,13 +6,13 @@
 # estimate are posterior medians with 95% CrI from the hierarchical model (A3, equation 5; same numbers as Table 1);
 # Southern Africa is the exploratory pooled model of Lesotho, Namibia and South Africa (95% CI), not part of the overall estimate.
 suppressMessages({library(data.table); library(ggplot2)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); TB <- file.path(ROOT, "outputs/tables/P33_youth_v3")
+ROOT <- Sys.getenv("RR"); TB <- file.path(ROOT, "outputs/tables/P33_youth_v3")
 FG <- file.path(ROOT, "outputs/figures/disclosure_v3")
 FONT <- "Times New Roman"; NAVY <- "#1B2A6B"; MAROON <- "#9E2A3A"; SQ <- "#B5B5B5"; GREYD <- "#7A7A7A"
 NAMES <- c(AO = "Angola", BF = "Burkina Faso", BJ = "Benin", BU = "Burundi", CD = "DR Congo", CI = "Côte d'Ivoire", CM = "Cameroon", ET = "Ethiopia", GA = "Gabon", GH = "Ghana",
            GM = "Gambia", GN = "Guinea", KE = "Kenya", KM = "Comoros", LB = "Liberia", LS = "Lesotho", MD = "Madagascar", ML = "Mali", MR = "Mauritania", MW = "Malawi", MZ = "Mozambique",
            NG = "Nigeria", NM = "Namibia", RW = "Rwanda", SL = "Sierra Leone", SN = "Senegal", TD = "Chad", TG = "Togo", TZ = "Tanzania", UG = "Uganda", ZA = "South Africa", ZM = "Zambia",
-           ZW = "Zimbabwe", SZ = "Eswatini")
+           ZW = "Zimbabwe", SZ = "Eswatini", ST = "São Tomé and Príncipe")
 md <- function(x, d = 2) gsub(".", "·", formatC(x, format = "f", digits = d), fixed = TRUE)
 est <- function(o, l, h) sprintf("%s (%s–%s)", md(o), md(l), md(h))
 CE <- fread(file.path(TB, "A2_country_estimates.csv"))[source == "DHS" & outcome == "sought_any"]

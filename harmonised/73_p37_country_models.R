@@ -1,10 +1,10 @@
 # 73_p37_country_models.R - Pre-registration 37: country x programme models for the harmonised DHS-VACS pool.
 # Young women 15-24 who experienced violence; outcomes told anyone and sought any help; common predictors age (centred 20), rural residence,
 # female household head, both physical and sexual violence. Survey-weighted logit, PSU-clustered SEs; DHS with survey-round fixed effects.
-suppressMessages({library(data.table); library(fixest)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); OUT <- file.path(ROOT, "outputs/tables/P37_harmonised"); dir.create(OUT, showWarnings = FALSE)
+suppressMessages({library(data.table); library(fixest)}); source(Sys.getenv("FIRTH"))
+ROOT <- Sys.getenv("RR"); OUT <- file.path(ROOT, "outputs/tables/P37_harmonised"); dir.create(OUT, showWarnings = FALSE)
 REG <- c(BF = "West", BJ = "West", CI = "West", GH = "West", GM = "West", GN = "West", LB = "West", ML = "West", MR = "West", NG = "West", SL = "West", SN = "West", TG = "West", NI = "West",
-         AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
+         ST = "Central", AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
          BU = "East", ET = "East", KE = "East", KM = "East", MD = "East", MW = "East", MZ = "East", RW = "East", TZ = "East", UG = "East", ZM = "East", ZW = "East",
          LS = "Southern", NM = "Southern", SZ = "Southern", ZA = "Southern")
 TERMS <- c("age", "rural", "hh_female", "both")

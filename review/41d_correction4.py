@@ -6,7 +6,7 @@ Then the derived files are backed up (*_pre_corr4.csv.gz) and updated: formal/pe
 """
 import zipfile, io, re, shutil, numpy as np, pandas as pd
 from pathlib import Path
-R = Path.home() / "Documents/OMS DHS Births Climate Policy"; D = R / "data/derived"
+R = __import__("pathlib").Path(__import__("os").environ["RR"]); D = R / "data/derived"
 pairs = pd.read_csv(D / "ir_ge_pairs.csv"); pairs = pairs[pairs.usable]
 pairs["survey"] = pairs.country + "_" + pairs.years.astype(str).str[:4] + "_" + pairs.ir.str[4:6]
 PHYS = [f"d105{c}" for c in "abcdefgj"]; SEX = ["d105h", "d105i", "d105k"]

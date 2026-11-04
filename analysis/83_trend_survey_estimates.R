@@ -2,7 +2,7 @@
 # For each DHS survey: survey-weighted % of young women (15-24) with violence who told anyone, sought any help, sought formal help,
 # with logit-method 95% CIs (PSU clustering) and the logit-scale standard error; survey time = mean interview date.
 suppressMessages({library(data.table); library(survey)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy")
+ROOT <- Sys.getenv("RR")
 s50 <- readLines(file.path(ROOT, "analysis/50_disclosure_predictors.R")); Sys.setenv(P33_SCOPE = "youth", AGE_CONT = "1")
 eval(parse(text = s50[2:(grep("^V <- fread", s50)[1] - 1)]))                    # D exactly as in the primary analysis
 D[, year := 1900 + mean(v008, na.rm = TRUE) / 12, by = survey]
@@ -14,6 +14,7 @@ E <- rbindlist(lapply(c("told", "sought_any", "formal"), function(y) {
   setnames(r, c("survey", "p", "lo", "hi"))
   r <- merge(r, d[, .(country = country[1], region = region[1], year = year[1], n = .N, events = sum(get(y))), by = survey], by = "survey")
   r[, `:=`(outcome = y, logit = qlogis_safe(p), se = (qlogis_safe(hi) - qlogis_safe(lo)) / (2 * 1.959964))] }))
+E[, zero_event_corrected := events == 0 | events == n]; E[zero_event_corrected == TRUE, `:=`(p = (events + 0.5) / (n + 1), logit = qlogis((events + 0.5) / (n + 1)), se = sqrt(1 / (events + 0.5) + 1 / (n - events + 0.5)))]   # Correction 5, deviation 4: zero-event surveys
 E[, t := (year - 2015) / 10]
 fwrite(E, file.path(ROOT, "outputs/tables/P38_review/P39_survey_estimates.csv"))
 print(E[, .(surveys = .N, countries = uniqueN(country), min_pct = round(100 * min(p), 1), max_pct = round(100 * max(p), 1), zero_events = sum(events == 0)), by = outcome])

@@ -4,11 +4,11 @@ Hyperlinks: red boxes = internal links (figures, tables, sections, equations); g
 """
 import json, sys, shutil, numpy as np, pandas as pd
 from pathlib import Path
-OL = Path(sys.argv[1]); R = Path.home() / "Documents/OMS DHS Births Climate Policy"; T = R / "outputs/tables"; V3 = T / "P33_youth_v3"
+OL = Path(sys.argv[1]); R = __import__("pathlib").Path(__import__("os").environ["RR"]); T = R / "outputs/tables"; V3 = T / "P33_youth_v3"
 (OL / "figures").mkdir(exist_ok=True)
 shutil.copy(R / "outputs/figures/disclosure_v3/fig1_map_help_seeking_lancet.png", OL / "figures/fig1_map_help_seeking.png")   # 61b_fig1_lancet_style.R
-for _f in ["fig_cascade_forest_lancet.png", "fig2_forest_injury_severe_lancet.png", "fig3_forest_both_former_lancet.png"]:   # cascade: 61d_fig_cascade_forest_lancet.R                                          # 61c_fig2_3_factor_forests_lancet.R
-    shutil.copy(R / "outputs/figures/disclosure_v3" / _f, OL / "figures" / _f)
+for _f in ["fig_trends_lancet.png", "fig_cascade_by_type_lancet.png", "fig_cascade_forest_lancet.png", "fig2_forest_injury_severe_lancet.png", "fig3_forest_both_former_lancet.png", "figS_prior_predictive.png", "figS_ppc.png", "figS_trend_checks.png", "figS_country_trends_sought_any.png"]:   # cascade: 61d_fig_cascade_forest_lancet.R                                          # 61c_fig2_3_factor_forests_lancet.R
+    shutil.copy(R / "outputs/figures/disclosure_v3" / _f, OL / "figures" / _f.replace("_lancet", ""))   # journal not yet chosen: no journal name in Overleaf file names
 N = {}                                                                     # every number used, for the independent check
 def put(k, v): N[k] = v; return v
 f1 = lambda x: f"{x:.1f}"; f2 = lambda x: f"{x:.2f}"
@@ -120,6 +120,19 @@ for k, r in [("or_injury", inj), ("or_severe", sev), ("or_both", both), ("or_for
              ("or_age", age), ("or_nonpartner", npt), ("or_injury_formal", injf), ("or_girls_sought", girl), ("or_girls_received", girl_r)]:
     put(k, (round(r.OR, 2), round(r.OR_lo, 2), round(r.OR_hi, 2)))
 ts, tt_, tf = tr("sought_any"), tr("told"), tr("formal")
+EX = R / "outputs/tables/exploratory"; SH = pd.read_csv(EX / "trend_shape.csv"); SRCD = pd.read_csv(EX / "sources_denominators.csv").set_index("source")
+LR = pd.read_csv(EX / "latest_round_cascade.csv").set_index("outcome"); NPP = pd.read_csv(EX / "nonpartner_physical_perpetrators.csv").set_index("group").pct
+BY = pd.read_csv(V3 / "A8_5_cascade_bayes.csv"); by = lambda o, k: BY[(BY.outcome == o) & (BY.scope == "All") & BY.kind.str.startswith(k)].iloc[0]
+def shp(o, spec): r = SH[(SH.outcome == o) & (SH.spec == spec) & (SH.term == "tt")].iloc[0]; return f"{f2(r.OR)} (95\\% CI {f2(r.lo)}--{f2(r.hi)})"
+ALLAGE = pd.read_csv(R / "outputs/tables/P33/A3_pooled_numpyro_key.csv"); aa = lambda m, t, o: ALLAGE[(ALLAGE.model == m) & (ALLAGE.term == t) & (ALLAGE.outcome == o)].iloc[0]
+TRA = pd.read_csv(R / "outputs/tables/P33/A5_trends_numpyro.csv"); tra = lambda o: TRA[(TRA.model == "adjusted") & (TRA.outcome == o)].iloc[0]
+girl_p = pp("female", "sought", src="VACS", model="PV"); put("or_girls_sought_pv", (round(girl_p.OR, 2), round(girl_p.OR_lo, 2), round(girl_p.OR_hi, 2)))
+nfm = put("formal_main_countries", CE[(CE.source == "DHS") & (CE.model == "main") & (CE.outcome == "formal")].country.nunique())
+nfp = put("formal_partner_countries", CE[(CE.source == "DHS") & (CE.model == "partner") & (CE.outcome == "formal")].country.nunique())
+fp_reg = sorted(CE[(CE.source == "DHS") & (CE.model == "partner") & (CE.outcome == "formal")].region.unique())
+sig_b = P39s[(P39s.outcome == "sought_any") & (P39s.scope == "All")].sigma_b.iloc[0]
+max_div_pct = 100 * P.divergences.max() / 8000
+nzero = P39e[(P39e.outcome == "formal") & (P39e.events == 0)].survey.tolist()
 vt = A82[A82.model.str.startswith("A8.2a")].iloc[0]; sb = A82[A82.model.str.contains("base covariates")].iloc[0]; ss = A82[A82.model.str.contains("severity")].iloc[0]
 tpp = TRpp[TRpp.outcome == "sought_any"].iloc[0]
 for k, r in [("trend_sought", ts), ("trend_told", tt_), ("trend_formal", tf), ("trend_victim", vt), ("trend_partner_base", sb), ("trend_partner_sev", ss)]:
@@ -218,7 +231,7 @@ which yields estimates representative of the surveyed population.\cite{lumley200
 \begin{equation}\label{eq:sandwich}
 \widehat{\mathbf V}(\hat{\boldsymbol\beta}_c)=\frac{G}{G-1}\,\mathbf A^{-1}\Big(\sum_{g=1}^{G}\mathbf u_g\mathbf u_g^{\top}\Big)\mathbf A^{-1},\qquad \mathbf u_g=\sum_{i\in g}w_i(y_i-\pi_i)\mathbf x_i,
 \end{equation}
-where $g$ indexes the $G$ PSUs and $\mathbf A$ is the weighted information matrix, so that inference allows for correlation within communities. We fitted models with fixest.\cite{berge2018} Pre-specified rules required at least 300 respondents and 30 events per country and discarded estimates with standard errors above 5 (separation). Injury was missing for """ + f"{inj_miss}" + r"""\% of women with partner violence, who were kept with a missing-indicator term. All predictors entered together, so each odds ratio is mutually adjusted; because education, wealth, urban residence and age precede the other predictors, we also fitted a reduced model with these four only.\cite{westreich2013} VACS models were fitted separately for sexual and physical violence among those reporting each type, with one intercept per country (one round), the VACS predictors and an inclusion rule of 150 respondents and 15 events; rural residence, not recorded in Kenya, was omitted there.
+where $g$ indexes the $G$ PSUs and $\mathbf A$ is the weighted information matrix, so that inference allows for correlation within communities. We fitted models with fixest.\cite{berge2018} Pre-specified rules required at least 300 respondents and 30 events per country. Models showing separation (an absolute log odds ratio above 5, a standard error of 5 or more, or non-convergence) were refitted with Jeffreys-prior penalised (Firth) logistic regression,\cite{firth1993} with survey rounds as indicators; for each term we used the larger of the model-based and cluster-robust standard errors, because robust standard errors are too small when cells are sparse (Correction 5). Injury was missing for """ + f"{inj_miss}" + r"""\% of women with partner violence, who were kept with a missing-indicator term. All predictors entered together, so each odds ratio is mutually adjusted; because education, wealth, urban residence and age precede the other predictors, we also fitted a reduced model with these four only.\cite{westreich2013} VACS models were fitted separately for sexual and physical violence among those reporting each type, with one intercept per country (one round), the VACS predictors and an inclusion rule of 150 respondents and 15 events; rural residence, not recorded in Kenya, was omitted there.
 
 \textbf{Combining countries.} We combined the country estimates $\hat\beta_{ck}$ for predictor $k$, with standard errors $s_{ck}$, in a Bayesian hierarchical model of countries within regions:
 \begin{equation}\label{eq:hier}
@@ -280,9 +293,97 @@ $\sigma_a$, $\sigma_b$, $\omega_a$, $\omega_b$, $\sigma_e$ & Between-country and
 \end{table}
 """
 
+# ---------------- Pre-registration 42: disclosure by perpetrator and type of violence ----------------
+P42d = T / "P42"; C42 = pd.read_csv(P42d / "P42_cascade_by_type.csv"); O42 = pd.read_csv(P42d / "P42_pooled.csv")
+K42 = pd.read_csv(P42d / "P42_analysis_keys.csv.gz"); n127 = put("p42_d127_surveys", int(K42.groupby("survey").d127_resolved.first().sum()))
+def c42(g, o, rg="All"): return C42[(C42.group == g) & (C42.outcome == o) & (C42.region == rg)].iloc[0]
+def pc42(g, o, rg="All"):
+    r = c42(g, o, rg); put(f"p42_{g}_{o}_{rg}", (round(r.pct, 1), round(r.lo, 1), round(r.hi, 1))); return f"{f1(r.pct)}\\% ({f1(r.lo)}--{f1(r.hi)})"
+def o42(t, o="sought_any", a="B_types"):
+    r = O42[(O42.analysis == a) & (O42.term == t) & (O42.outcome == o)].iloc[0]; return r
+def or42(t, o="sought_any", a="B_types"): return orc(o42(t, o, a), f"p42_{a}_{t}_{o}")
+n42c = int(o42("NS").countries); n42f = int(o42("NS", "formal").countries)
+shr = lambda g: f"{c42(g, 'sought_any').share_of_victims:.0f}\\%"
+TYPE_TEXT = r"""
+\subsection{Sexual violence by a partner is the least disclosed}\label{sec:types}
+Disclosure depended on who the perpetrator was and on the type of violence (figure~\ref{fig:types}). Young women whose only violence was sexual violence by a partner (""" + shr("Partner sexual only") + r""" of survivors) were the least likely to disclose: """ + pc42("Partner sexual only", "told") + r""" told anyone, """ + pc42("Partner sexual only", "sought_any") + r""" sought any help and """ + pc42("Partner sexual only", "formal") + r""" sought formal help. Those whose only violence was sexual violence by a non-partner were among the most likely: """ + pc42("Non-partner sexual only", "told") + r""", """ + pc42("Non-partner sexual only", "sought_any") + r""" and """ + pc42("Non-partner sexual only", "formal") + r""". Physical violence by a non-partner, the most common type (""" + shr("Non-partner physical") + r"""), was disclosed less often than physical violence by a partner (sought any help """ + pc42("Non-partner physical only", "sought_any") + r""" vs """ + pc42("Partner physical only", "sought_any") + r""" when it was the only type).
+
+With the four types mutually adjusted and adjusted for women's characteristics (""" + str(n42c) + r""" countries), sexual violence by a non-partner was associated with seeking any help (OR """ + or42("NS") + r""") and formal help (""" + or42("NS", "formal") + r"""; """ + str(n42f) + r""" countries), whereas sexual violence by a partner was not (""" + or42("PS") + r"""). The odds of seeking help were about twice as high after non-partner as after partner sexual violence (ratio of ORs """ + or42("NS_minus_PS") + r"""; formal help """ + or42("NS_minus_PS", "formal") + r"""), consistently across regions. Physical violence by a partner was associated with more help-seeking than physical violence by a non-partner (ratio """ + or42("NP_minus_PP") + r"""). Among women with only one type, partner sexual violence carried lower odds of seeking any help than partner physical violence (""" + or42("Partner sexual only", a="C2_profiles") + r"""). The ordering was unchanged in the """ + str(n127) + r""" surveys that recorded who forced the first sexual act (appendix table~\ref{tab:types_or}). Because DHS asks about help-seeking for any violence rather than for each episode, the estimates describe women by the violence they experienced; only the single-type profiles attribute disclosure to one perpetrator.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=\textwidth,height=0.70\textheight,keepaspectratio]{figures/fig_cascade_by_type.png}
+\caption{\textbf{Disclosure cascade by perpetrator and type of violence among young women aged 15--24 years}\\
+(A) Told anyone, (B) sought any help and (C) sought formal help, DHS 2004--2025, """ + fmt(nD) + r""" women. Rows give the four types of violence (women can appear in several), women who experienced only one type, and combinations; the percentage of survivors in each group is in brackets. Black markers are survey-weighted percentages, horizontal lines are 95\% CIs from the survey design (logit method, equation~\ref{eq:ci}) and grey squares are proportional to the number of women. Hollow diamonds and dashed lines mark the estimate for all young survivors. Help-seeking questions refer to all violence experienced, not to a specific perpetrator. Each panel has its own scale.}
+\label{fig:types}
+\end{figure}
+"""
+G42 = ["Partner physical", "Partner sexual", "Non-partner physical", "Non-partner sexual", "Partner physical only", "Partner sexual only", "Non-partner physical only",
+       "Non-partner sexual only", "Partner physical and sexual", "Non-partner physical and sexual", "Partner and non-partner", "All young victims"]
+def cell42(g, o, rg):
+    r = c42(g, o, rg); return "n$<$50" if pd.isna(r.pct) else f"{f1(r.pct)} ({f1(r.lo)}--{f1(r.hi)})"
+def panel42(o): return "\n".join(f"{'All young survivors' if g == 'All young victims' else g} & " + " & ".join(cell42(g, o, rg) for rg in ["West", "Central", "East", "Southern"]) + " \\\\" for g in G42)
+CLS = {"universal": "consistent", "region-specific": "region-specific", "uncertain": "uncertain"}
+LAB42 = {"PP": "Partner physical", "PS": "Partner sexual", "NP": "Non-partner physical", "NS": "Non-partner sexual", "NS_minus_PS": "Non-partner vs partner sexual (ratio)",
+         "NP_minus_PP": "Non-partner vs partner physical (ratio)", "Partner sexual only": "Partner sexual only", "Non-partner physical only": "Non-partner physical only",
+         "Non-partner sexual only": "Non-partner sexual only"}
+def orcell(a, t, o):
+    q = O42[(O42.analysis == a) & (O42.term == t) & (O42.outcome == o)]
+    if not len(q): return "--"
+    r = q.iloc[0]; return f"{f2(r.OR)} ({f2(r.OR_lo)}--{f2(r.OR_hi)}){{\\scriptsize\\textsuperscript{{{ {'universal': 'c', 'region-specific': 'r', 'uncertain': 'u'}[r['class']] }}}}}"
+def orpanel(a, terms): return "\n".join(f"{LAB42[t]} & " + " & ".join(orcell(a, t, o) for o in ["told", "sought_any", "formal"]) + " \\\\" for t in terms)
+TYPE_TABLES = r"""\subsection*{Disclosure by perpetrator and type of violence}
+Help-seeking questions refer to all violence a woman experienced, so these estimates describe women by their experience of violence; only single-type profiles attribute disclosure to one perpetrator (pre-registration 42).
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.3cm}cccc}
+\caption{\textbf{Seeking any help and formal help by perpetrator and type of violence, by UN region.} Survey-weighted \% (95\% CI), young women aged 15--24 years with violence.}\label{tab:types_region}\\
+\toprule
+ & West Africa & Central Africa & East Africa & Southern Africa \\
+\midrule
+\endfirsthead
+\toprule
+ & West Africa & Central Africa & East Africa & Southern Africa \\
+\midrule
+\endhead
+\multicolumn{5}{l}{\textit{Sought any help}} \\
+""" + panel42("sought_any") + r"""
+\midrule
+\multicolumn{5}{l}{\textit{Sought formal help}} \\
+""" + panel42("formal") + r"""
+\bottomrule
+\multicolumn{5}{p{15cm}}{\footnotesize The first four rows overlap (a woman can experience several types); the next seven are mutually exclusive. n$<$50: fewer than 50 women.}
+\end{longtable}
+
+\begin{table}[!htbp]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Adjusted associations between perpetrator and type of violence and disclosure.} Pooled odds ratios (95\% CrI) from the two-stage hierarchical model.}
+\label{tab:types_or}
+\footnotesize
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.4cm}ccc}
+\toprule
+ & Told anyone & Sought any help & Sought formal help \\
+\midrule
+\multicolumn{4}{l}{\textit{Four types, mutually adjusted (""" + str(n42c) + r""" countries; """ + str(n42f) + r""" for formal help)}} \\
+""" + orpanel("B_types", ["PP", "PS", "NP", "NS", "NS_minus_PS", "NP_minus_PP"]) + r"""
+\midrule
+\multicolumn{4}{l}{\textit{Surveys recording who forced the first sexual act (""" + str(n127) + r""" surveys)}} \\
+""" + orpanel("C1_d127", ["PP", "PS", "NP", "NS", "NS_minus_PS", "NP_minus_PP"]) + r"""
+\midrule
+\multicolumn{4}{l}{\textit{Women with one type only (reference: partner physical only)}} \\
+""" + orpanel("C2_profiles", ["Partner sexual only", "Non-partner physical only", "Non-partner sexual only"]) + r"""
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Each odds ratio compares women who experienced that type with women who did not, holding the other three types constant, and is adjusted for age, education, wealth, urban residence, marital status, employment, three or more children, media exposure, household decisions, justification of wife-beating, violence in the past 12 months and interview privacy (survey-round fixed effects). Ratios compare the two odds ratios within each country before pooling. Superscripts: c, consistent across regions; r, region-specific; u, uncertain. Formal help could be modelled only in the countries listed.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+"""
+
 FOREST_FIGS = r"""\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{figures/fig2_forest_injury_severe_lancet.png}
+\includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{figures/fig2_forest_injury_severe.png}
 \caption{\textbf{Injury and severe physical violence and seeking any help, by country}\\
 Young women aged 15--24 years with partner violence in """ + str(PO2[('partner','injury')]['countries']) + r""" countries (DHS). Country rows are odds ratios from mutually adjusted survey-weighted logistic models in each country with 95\% CIs clustered by primary sampling unit (equations~\ref{eq:logit}--\ref{eq:sandwich}); grey squares are proportional to the number of women. Hollow navy diamonds are regional subtotals and the overall estimate from the Bayesian hierarchical model (posterior medians with 95\% credible intervals, equation~\ref{eq:hier}; between-country SD on the log-odds scale """ + "$\\tau$=" + md2(PO2[('partner','injury')]['tau']) + " for injury and " + md2(PO2[('partner','severe')]['tau']) + r""" for severe violence). The grey diamond is the exploratory pooled model of Lesotho, Namibia and South Africa (95\% CI), which is not part of the overall estimate. The solid line marks no association (odds ratio 1) and the dashed line the overall estimate; arrows mark intervals that extend beyond the axis.}
 \label{fig:forest_partner}
@@ -290,7 +391,7 @@ Young women aged 15--24 years with partner violence in """ + str(PO2[('partner',
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{figures/fig3_forest_both_former_lancet.png}
+\includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{figures/fig3_forest_both_former.png}
 \caption{\textbf{Physical and sexual violence, being formerly in union and seeking any help, by country}\\
 Young women aged 15--24 years who experienced violence in """ + str(PO2[('main','vtypeboth')]['countries']) + r""" countries (DHS). Physical and sexual violence is compared with physical violence only, and formerly in union with currently in union. Estimates and symbols as in figure~\ref{fig:forest_partner} (""" + "$\\tau$=" + md2(PO2[('main','vtypeboth')]['tau']) + " and " + md2(PO2[('main','maritalformer')]['tau']) + r""").}
 \label{fig:forest_main}
@@ -333,6 +434,37 @@ Findings informed & Cascade among young women; factors associated with help-seek
 \end{threeparttable}
 \end{table}"""
 
+_aa_rows = "\n".join(f"{lab} & " + " & ".join(orc(aa(m, t, o)).replace("95\\% CrI ", "") for o in ["told", "sought_any", "formal"]) + " \\\\" for m, t, lab in [("partner", "injury", "Injury from partner violence"), ("partner", "severe", "Severe physical violence"), ("main", "vtypeboth", "Physical and sexual violence"), ("main", "maritalformer", "Formerly in union"), ("main", "educsecondary+", "Secondary or higher education"), ("main", "wealthq", "Household wealth (per quintile)"), ("main", "urban", "Urban residence")])
+EXTRA_APP = r"""
+\subsection*{Trends by country}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/figS_country_trends_sought_any.png}
+\caption{\textbf{Seeking any help in each country with repeated surveys, partially pooled trends}\\
+Young women aged 15--24 years with violence (DHS). Points and bars are survey-weighted estimates with design-based 95\% CIs. Lines and bands are posterior medians and 95\% credible intervals of each country's trajectory from the hierarchical meta-regression of figure~\ref{fig:trends}, which borrows strength from the regional and overall trends. Panel text gives the country's odds ratio per decade and the posterior probability of a decline; the vertical axis uses the logit scale, as in figure~\ref{fig:trends}. Because the model estimates little variation in slopes between countries (SD """ + f2(sig_b) + r""" on the log-odds scale per decade), every trajectory is pulled towards the shared decline, including in countries whose estimates rose between their first and last survey; the panels therefore illustrate partial pooling rather than independent evidence of a decline in each country. C, E and W: Central, East and West Africa.}
+\label{fig:countrytrends}
+\end{figure}
+
+\subsection*{Registered analysis: women of all ages}
+\begin{table}[!htbp]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Factors associated with disclosure among women aged 15--49 years who experienced violence (registered analysis)}}
+\label{tab:allage}
+\footnotesize
+\begin{tabular}{>{\raggedright\arraybackslash}p{5cm}ccc}
+\toprule
+ & Told anyone & Sought any help & Sought formal help \\
+\midrule
+""" + _aa_rows + r"""
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Pooled odds ratios (95\% CrI) from the same two-stage model as for young women (Firth refits where separated), with age in three groups. Injury and severe violence among women with partner violence. The registered primary outcome was formal help; the analysis was restricted to ages 15--24 years after these results were seen (amendment A6). Adjusted odds ratio per decade for seeking any help: """ + orc(tra("sought_any")) + r"""; formal help: """ + orc(tra("formal")) + r""".
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+"""
 tex = r"""\documentclass[11pt,a4paper]{article}
 \usepackage[a4paper,margin=2.4cm]{geometry}
 \usepackage[T1]{fontenc}
@@ -363,23 +495,23 @@ tex = r"""\documentclass[11pt,a4paper]{article}
 \setstretch{1.25}
 \setlength{\parskip}{0.35em}
 \newcommand{\todo}[1]{\textcolor{red}{[#1]}}
-\newcommand{\md}{\ifmmode{\cdot}\else\textperiodcentered\fi}% Lancet decimal point
-\title{\textbf{Disclosure and help-seeking after violence among young people in sub-Saharan Africa, 2004--2025: a multi-country analysis of 64 Demographic and Health Surveys and eight Violence Against Children and Youth Surveys}}
-\author{""" + AUTHORS + r"""\\[0.3em]
-\small\parbox{0.9\textwidth}{\centering Oxford Martin Programme on Climate and Child Health; Accelerate Research Hub; University of Oxford \todo{affiliations to confirm}}}
-\date{\small Draft for co-authors, October 2026. Correspondence: \todo{corresponding author}}
+\newcommand{\md}{\ifmmode{\cdot}\else\textperiodcentered\fi}%  decimal point
+\title{\textbf{Disclosure and help-seeking after violence among young people in sub-Saharan Africa, 2004--2025: a multi-country analysis of """ + str(nS) + r""" Demographic and Health Surveys and eight Violence Against Children and Youth Surveys}}
+\author{\\[0.3em]
+\small\parbox{0.9\textwidth}{\centering Oxford Martin Programme on Climate and Child Health; Accelerate Research Hub; University of Oxford \todo{Authors and affiliations to confirm}}}
+\date{\small Draft for co-authors, November 2026. Correspondence: \todo{corresponding author}}
 \begin{document}
 \maketitle
 
 \section*{Summary}
-\noindent\todo{Summary to be written once the main text is final (Lancet structure: Background, Methods, Findings, Interpretation, Funding; up to 300 words). The previous version is saved in the archive folder of this Overleaf project.}
+\noindent\todo{Summary to be written once the main text is final ( structure: Background, Methods, Findings, Interpretation, Funding; up to 300 words). The previous version is saved in the archive folder of this Overleaf project.}
 
 \section*{Research in context}
 \noindent\textbf{Evidence before this study} We searched PubMed on 19 October 2026 with 12 structured queries combining disclosure and help-seeking, violence, DHS and VACS (appendix). Multi-country DHS analyses describe reporting among women of all ages,\cite{palermo2014} and VACS analyses describe a disclosure cascade among children and young people,\cite{pereira2020} mostly with country-by-country estimates. Pooled DHS analyses of 10 to 54 countries\cite{aboagye2023,ayebeng2024,goodson2021,stiller2025} combined all countries in one model, which assumes the same associations everywhere. We found no study that tested whether predictors of help-seeking among young people agree across African regions, replicated them in independent sets of countries, or described trends across survey rounds. \todo{Literature review to be completed.}
 
-\noindent\textbf{Added value of this study} Across """ + str(nS) + r""" surveys in """ + str(nC) + r""" countries, nearly all young survivors (""" + f"{not_formal:.0f}" + r"""\%) never reached formal services, and seeking help fell over two decades in every region with repeated surveys, by about """ + f"{-P39s[(P39s.outcome == 'sought_any') & (P39s.scope == 'All')].pp_2005_2025.iloc[0]:.0f}" + r""" percentage points between 2005 and 2025. Help was sought at a crisis point (after injury or severe violence, or once the relationship had ended), with the same pattern in every region and in independent sets of countries, whereas wealth and education made no difference. VACS shows that boys seek help even less often than girls.
+\noindent\textbf{Added value of this study} Across """ + str(nS) + r""" surveys in """ + str(nC) + r""" countries, nearly all young survivors (""" + f"{not_formal:.0f}" + r"""\%) never sought help from formal services. Seeking any help fell in every region with repeated surveys, by about """ + f"{-P39s[(P39s.outcome == 'sought_any') & (P39s.scope == 'All')].pp_2005_2025.iloc[0]:.0f}" + r""" percentage points between 2005 and 2025 and mostly after about 2013, whereas formal help did not fall. Help-seeking was more likely after injury or severe violence, or once the relationship had ended, with the same pattern in every region and in independent sets of countries, and showed little association with wealth or education. In VACS, boys disclosed sexual violence less often than girls.
 
-\noindent\textbf{Implications of all the available evidence} Services reach a small, severe and shrinking part of the violence that young people experience. Help-seeking should be monitored alongside violence prevalence for the Sustainable Development Goals, and programmes should create earlier, low-threshold routes to help, including for boys, rather than assume that help-seeking will rise with education or wealth.
+\noindent\textbf{Implications of all the available evidence} Services reach a small and severe part of the violence that young people experience, and informal help-seeking is falling. Help-seeking should be monitored alongside violence prevalence for the Sustainable Development Goals, and programmes should create earlier, low-threshold routes to help, including for boys, rather than assume that help-seeking will rise with education or wealth.
 
 \section{Introduction}\label{sec:intro}
 \noindent\todo{Introduction to be written (literature led by DM); the outline with recommended references is in the archive folder of this Overleaf project.}
@@ -390,28 +522,28 @@ Most young survivors of violence in sub-Saharan Africa never reach help,\cite{pa
 \subsection{Data}\label{sec:data}
 \textbf{Data.} We used all DHS rounds from sub-Saharan Africa with the domestic violence module and help-seeking questions (""" + str(nS) + r""" surveys, """ + str(nC) + r""" countries, 2004--2025; """ + str(N['n_multiround_countries']) + r""" countries with repeated rounds), in which one randomly selected woman per household is interviewed in private,\cite{croft2018} and analysed women aged 15--24 years who reported physical or sexual violence (n=""" + fmt(nD) + r"""). VACS from eight countries (2013--2023; """ + fmt(nV) + r""" girls and boys aged 13--24 years, """ + fmt(nVany) + r""" of whom reported violence)\cite{nguyen2019} add boys, younger adolescents and separate questions on sexual and physical violence, in East and Southern Africa. Percentages were never pooled across the two surveys; associations were pooled only in a pre-specified harmonised analysis (appendix table~\ref{tab:sources}).
 
-\textbf{Outcomes.} DHS asked women who reported violence whether they had ever sought help, from whom, and whether they had told anyone. We defined three outcomes: \emph{told anyone} (sought help or told someone, where asked); \emph{sought any help}; and \emph{sought formal help} (police, health workers, lawyers or courts, social services, non-governmental and women's organisations, government offices for women or social affairs, safe spaces or shelters, and helplines). Religious and traditional leaders were informal; chiefs and local authorities were formal only in a sensitivity analysis. We read and audited the source labels of every survey (appendix table~\ref{tab:coding}). In VACS we used the derived indicators \emph{told anyone}, \emph{knew where to get help}, \emph{sought help} and \emph{received services}, separately for sexual and physical violence. All help-seeking items refer to the respondent's lifetime.
+\textbf{Outcomes.} DHS asked women who reported violence whether they had ever sought help, from whom, and whether they had told anyone. We defined three outcomes: \emph{told anyone} (sought help or told someone, where asked); \emph{sought any help}; and \emph{sought formal help} (police, health workers, lawyers or courts, social services, non-governmental and women's organisations, government offices for women or social affairs, safe spaces or shelters, and helplines). Religious and traditional leaders were informal; chiefs and local authorities were formal only in a sensitivity analysis. We read and audited the source labels of every survey (appendix table~\ref{tab:coding}). In VACS we used the derived indicators \emph{told anyone}, \emph{knew where to get help}, \emph{sought help} and \emph{received services}, separately for sexual and physical violence. All help-seeking items refer to the respondent's lifetime. The pre-registered primary outcome was formal help in DHS (sought help in VACS); because formal help could be modelled in only """ + str(nfm) + r""" countries among young women, we report seeking any help as the main outcome, formal help alongside it, and the registered analysis of women of all ages in the appendix.
 
-\textbf{Predictors.} We pre-specified predictors from the help-seeking framework\cite{liang2005} and earlier survey studies:\cite{palermo2014,pereira2020} injury from partner violence (bruises; eye injuries, sprains, dislocations or burns; or wounds, broken bones, broken teeth or other serious injury), severe physical violence (DHS summary of being kicked or dragged, strangled or burnt, or threatened with a weapon), partner alcohol use and three or more controlling behaviours (asked about partners only, so modelled among women with partner violence); type of violence (physical, sexual, both); perpetrator (partner, non-partner, both; forced sex was attributed using the person who forced the first sexual act, where this was asked); violence in the past 12 months; age in years; education; household wealth quintile; urban residence; marital status; employment; three or more children; weekly media exposure; participation in household decisions; agreement that wife-beating is justified; and privacy of the interview (not interrupted by the husband or another adult). VACS models included sex, age in years, rural residence, a female household head and experiencing both sexual and physical violence.
+\textbf{Predictors.} We pre-specified predictors from the help-seeking framework\cite{liang2005} and earlier survey studies:\cite{palermo2014,pereira2020} injury from partner violence (bruises; eye injuries, sprains, dislocations or burns; or wounds, broken bones, broken teeth or other serious injury), severe physical violence (DHS summary of being kicked or dragged, strangled or burnt, or threatened with a weapon), partner alcohol use and three or more controlling behaviours (asked about partners only, so modelled among women with partner violence); type of violence (physical, sexual, both); perpetrator (partner, non-partner, both; forced sex was attributed using the person who forced the first sexual act, where this was asked); violence in the past 12 months; age in years; education; household wealth quintile; urban residence; marital status; employment; three or more children; weekly media exposure; participation in household decisions; agreement that wife-beating is justified; and privacy of the interview (not interrupted by the husband or another adult). VACS models included sex, age in years, rural residence, a female household head and experiencing both sexual and physical violence. For disclosure by perpetrator and type, we classified violence as physical or sexual by a partner or by a non-partner (types can co-occur) and grouped women by the combination they experienced; these indicators replaced type and perpetrator in a separate set of country models, pooled in the same way (pre-registration 42).
 
 \subsection{Statistical analysis}\label{sec:model}
 \textbf{Cascade.} We estimated survey-weighted percentages with 95\% CIs that account for clustering within primary sampling units, computed on the logit scale because formal help is rare.\cite{lumley2004} Pooled percentages weight surveys by their sample size; percentages weighted by each country's population of young women are in the appendix.
 
-\textbf{Factors associated with help-seeking.} Sampling, questionnaires and services differ between countries, so we used a two-stage approach.\cite{riley2010,burke2017,campos2023} First, in each country, we fitted a survey-weighted logistic regression with all pre-specified predictors, survey-round fixed effects and standard errors clustered by primary sampling unit; a country entered if it had at least 300 respondents and 30 events. Second, we combined the country odds ratios in a Bayesian hierarchical model of countries within UN regions, in which each regional and all-region estimate borrows strength from the others while countries and regions are allowed to differ.\cite{gelman2006} We report posterior medians with 95\% credible intervals (CrIs) and 95\% prediction intervals for a new country,\cite{riley2011} classify each factor as consistent across regions, region-specific or uncertain, and test replication in two random halves of countries. Southern Africa, where no country met the inclusion rule, was analysed in one exploratory pooled model.
+\textbf{Factors associated with help-seeking.} Sampling, questionnaires and services differ between countries, so we used a two-stage approach.\cite{riley2010,burke2017,campos2023} First, in each country, we fitted a survey-weighted logistic regression with all pre-specified predictors, survey-round fixed effects and standard errors clustered by primary sampling unit; a country entered if it had at least 300 respondents and 30 events. Models with separation were refitted with Firth's penalised likelihood.\cite{firth1993} Second, we combined the country odds ratios in a Bayesian hierarchical model of countries within UN regions, in which each regional and all-region estimate borrows strength from the others while countries and regions are allowed to differ.\cite{gelman2006} We report posterior medians with 95\% credible intervals (CrIs) and 95\% prediction intervals for a new country,\cite{riley2011} classify each factor as consistent across regions, region-specific or uncertain, and test replication in two random halves of countries. Southern Africa, where no country met the inclusion rule, was analysed in one exploratory pooled model.
 
-\textbf{Trends.} We estimated change over two decades in two complementary ways. Within the """ + str(N['n_multiround_countries']) + r""" countries with repeated rounds, we added survey year to the country models, giving an odds ratio per decade adjusted for all predictors. Across all """ + str(nS) + r""" surveys, a Bayesian hierarchical meta-regression of the survey-level percentages gave the overall and regional curves in figure~\ref{fig:trends} and the posterior probability of a decline; a frequentist random-effects meta-regression tested the slope and differences between regions.
+\textbf{Trends.} We estimated change over two decades in two complementary ways. Within the """ + str(N['n_multiround_countries']) + r""" countries with repeated rounds, we added survey year to the country models, giving an odds ratio per decade adjusted for all predictors. Across all """ + str(nS) + r""" surveys, a Bayesian hierarchical meta-regression of the survey-level percentages gave the overall and regional curves in figure~\ref{fig:trends}, 95\% prediction intervals for a new country and the posterior probability of a decline; a frequentist random-effects meta-regression tested the slope and differences between regions. A post-hoc check compared slopes in surveys before 2016 and from 2013 onwards.
 
 \textbf{DHS and VACS.} VACS models were fitted separately for sexual and physical violence and combined in the same way across East and Southern Africa. A pre-registered harmonised analysis pooled the associations of four factors measured in both surveys and estimated the difference between the surveys directly; percentages were never pooled across surveys.
 
 \textbf{Model checking and sensitivity analyses.} Every Bayesian model went through a full workflow:\cite{gelman2020,gabry2019} prior predictive checks, convergence diagnostics, posterior predictive checks with Bayesian $p$-values,\cite{gelman1996} and comparison with simpler models by DIC, WAIC and cross-validation.\cite{spiegelhalter2002,watanabe2010,vehtari2017} Pre-registered sensitivity analyses used crude, reduced and timing-aligned models, prevalence ratios\cite{zou2004} and risk differences, one-stage models,\cite{bates2015} alternative priors, population weights\cite{worldpop2025} and a wider definition of formal help. Equations, priors and all checks are in the appendix.
 
-\textbf{Pre-registration and software.} The analysis plan, all amendments (restriction to ages 15--24 to align with VACS; continuous age; the Bayesian implementation; four coding corrections; the sensitivity analyses) and their results were registered with time-stamped SHA-256 hashes before each analysis was run (appendix). Analyses used R 4.5 (survey, fixest, data.table, lme4, car) and Python 3 (NumPyro, JAX, ArviZ); the pooled estimates were reproduced independently with brms and Stan. Code is publicly available at \url{https://github.com/teklesam/disclosure-help-seeking-africa}.
+\textbf{Pre-registration and software.} The analysis plan, all amendments (restriction to ages 15--24 to align with VACS; continuous age; the Bayesian implementation; five corrections, the last refitting separated country models and adding seven surveys that had been excluded because they lacked GPS data; the sensitivity analyses) and their results were time-stamped with SHA-256 hashes before each analysis was run (appendix); the documents will be deposited on the Open Science Framework. Analyses used R 4.5 (survey, fixest, data.table, lme4, car) and Python 3 (NumPyro, JAX, ArviZ); the pooled estimates were reproduced independently with brms and Stan. Code is publicly available at \url{https://github.com/teklesam/disclosure-help-seeking-africa}.
 
 \textbf{Role of the funding source.} The funders had no role in study design, data analysis, interpretation or writing.
 
 \section{Results}\label{sec:results}
 \subsection{Few young survivors reach formal services}\label{sec:cascade}
-Of """ + fmt(nD) + r""" young women who experienced violence, """ + ci1(At) + r""" told anyone, """ + ci1(As) + r""" sought any help and """ + ci1(Af) + r""" sought formal help (figure~\ref{fig:cascade}): """ + f"{not_formal:.1f}" + r"""\% of young survivors never reached formal services. Weighted by population rather than sample size, the figures were """ + f"{pw('told').pct:.1f}" + r"""\%, """ + f"{pw('sought_any').pct:.1f}" + r"""\% and """ + f"{pw('formal').pct:.1f}" + r"""\% (appendix table~\ref{tab:popw}). Help came mostly from family (""" + f"{hs('src_family'):.0f}" + r"""\%), friends or neighbours (""" + f"{hs('src_friends_neighbours'):.0f}" + r"""\%) and the partner's family (""" + f"{hs('src_partner_family'):.0f}" + r"""\%); """ + f"{hs('src_police'):.1f}" + r"""\% went to the police and """ + f"{hs('src_health'):.1f}" + r"""\% to a health worker (appendix table~\ref{tab:helpsources}). Seeking any help ranged from """ + G(slo) + r""" to """ + G(shi) + r""", and formal help from """ + G(flo) + r""" to """ + G(fhi) + r""" (figure~\ref{fig:map}). Regions differed little in seeking any help (West """ + f"{f1(reg[('sought_any','West')].pct)}\\%" + r""", Central """ + f"{f1(reg[('sought_any','Central')].pct)}\\%" + r""", East """ + f"{f1(reg[('sought_any','East')].pct)}\\%" + r""", Southern """ + f"{f1(reg[('sought_any','Southern')].pct)}\\%" + r""") but substantially in formal help: """ + "; ".join(f"{g} " + f"{f1(reg[('formal',g)].pct)}\\% ({f1(reg[('formal',g)].lo)}--{f1(reg[('formal',g)].hi)})" for g in REG) + r""".
+Of """ + fmt(nD) + r""" young women who experienced violence, """ + ci1(At) + r""" told anyone, """ + ci1(As) + r""" sought any help and """ + ci1(Af) + r""" sought formal help (figure~\ref{fig:cascade}): """ + f"{not_formal:.1f}" + r"""\% of young survivors never sought help from formal services. In each country's most recent survey (median year """ + f"{LR.loc['sought_any', 'median_year']:.0f}" + r"""), """ + f"{LR.loc['sought_any', 'n_weighted']:.1f}" + r"""\% sought any help and """ + f"{LR.loc['formal', 'n_weighted']:.1f}" + r"""\% formal help. Treating countries equally, a typical country had """ + f"{f1(by('sought_any', 'typical').pct)}\\% (95\\% CrI {f1(by('sought_any', 'typical').lo)}--{f1(by('sought_any', 'typical').hi)})" + r""" of young survivors seeking any help, and a new country would be expected to have between """ + f"{f1(by('sought_any', 'new').lo)}\\% and {f1(by('sought_any', 'new').hi)}\\%" + r""" (95\% prediction interval; figure~\ref{fig:cascade}). Weighted by population rather than sample size, the figures were """ + f"{pw('told').pct:.1f}" + r"""\%, """ + f"{pw('sought_any').pct:.1f}" + r"""\% and """ + f"{pw('formal').pct:.1f}" + r"""\% (appendix table~\ref{tab:popw}). Help came mostly from family (""" + f"{hs('src_family'):.0f}" + r"""\%), friends or neighbours (""" + f"{hs('src_friends_neighbours'):.0f}" + r"""\%) and the partner's family (""" + f"{hs('src_partner_family'):.0f}" + r"""\%); """ + f"{hs('src_police'):.1f}" + r"""\% of those who sought help went to the police and """ + f"{hs('src_health'):.1f}" + r"""\% to a health worker, that is """ + f"{SRCD.loc['src_police', 'pct_all_survivors']:.1f}" + r"""\% and """ + f"{SRCD.loc['src_health', 'pct_all_survivors']:.1f}" + r"""\% of all young survivors (appendix table~\ref{tab:helpsources}). Seeking any help ranged from """ + G(slo) + r""" to """ + G(shi) + r""", and formal help from """ + G(flo) + r""" to """ + G(fhi) + r""" (figure~\ref{fig:map}). Regions differed little in seeking any help (West """ + f"{f1(reg[('sought_any','West')].pct)}\\%" + r""", Central """ + f"{f1(reg[('sought_any','Central')].pct)}\\%" + r""", East """ + f"{f1(reg[('sought_any','East')].pct)}\\%" + r""", Southern """ + f"{f1(reg[('sought_any','Southern')].pct)}\\%" + r""") but substantially in formal help: """ + "; ".join(f"{g} " + f"{f1(reg[('formal',g)].pct)}\\% ({f1(reg[('formal',g)].lo)}--{f1(reg[('formal',g)].hi)})" for g in REG) + r""".
 
 In VACS, """ + f"{f1(sv('tell','girls').pct)}\\% ({f1(sv('tell','girls').lo)}--{f1(sv('tell','girls').hi)})" + r""" of girls and """ + f"{f1(sv('tell','boys').pct)}\\% ({f1(sv('tell','boys').lo)}--{f1(sv('tell','boys').hi)})" + r""" of boys who experienced sexual violence told someone; """ + f"{f1(sv('sought','girls').pct)}\\%" + r""" and """ + f"{f1(sv('sought','boys').pct)}\\%" + r""" sought help, and """ + f"{f1(sv('recvdserv','girls').pct)}\\%" + r""" and """ + f"{f1(sv('recvdserv','boys').pct)}\\%" + r""" received services.
 
@@ -425,33 +557,33 @@ In VACS, """ + f"{f1(sv('tell','girls').pct)}\\% ({f1(sv('tell','girls').lo)}--{
 
 \begin{figure}[p]
 \centering
-\includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{figures/fig_cascade_forest_lancet.png}
+\includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{figures/fig_cascade_forest.png}
 \caption{\textbf{Disclosure cascade after violence among young women aged 15--24 years, by country}\\
-(A) Told anyone, (B) sought any help and (C) sought formal help (police, health workers, lawyers or courts, social services, non-governmental and women's organisations, government offices for women, safe spaces and helplines), DHS 2004--2025, """ + str(nC) + r""" countries. Black markers are survey-weighted percentages, horizontal lines are 95\% CIs from the survey design (logit method, equation~\ref{eq:ci}), and grey squares are proportional to the number of women. Hollow diamonds are regional subtotals and the overall estimate, pooling women within region with survey weights; the dashed line marks the overall estimate. Denominators differ by step (""" + fmt(int(cas.loc['told'])) + ", " + fmt(int(cas.loc['sought_any'])) + " and " + fmt(int(cas.loc['formal'])) + r""" women) because in some surveys telling anyone could not be distinguished from seeking help, and in others no formal source was listed. Each panel has its own scale.}
+(A) Told anyone, (B) sought any help and (C) sought formal help (police, health workers, lawyers or courts, social services, non-governmental and women's organisations, government offices for women, safe spaces and helplines), DHS 2004--2025, """ + str(nC) + r""" countries. Black markers are survey-weighted percentages, horizontal lines are 95\% CIs from the survey design (logit method, equation~\ref{eq:ci}), and grey squares are proportional to the number of women. Hollow diamonds are regional subtotals and the overall estimate, pooling women within region with survey weights; the dashed line marks the overall estimate. The filled diamond (typical country) is the posterior median and 95\% credible interval from a Bayesian random-effects model of the country percentages, in which every country counts equally; the bar below it is the 95\% prediction interval for the percentage in a new country, which adds variation between countries and regions. Denominators differ by step (""" + fmt(int(cas.loc['told'])) + ", " + fmt(int(cas.loc['sought_any'])) + " and " + fmt(int(cas.loc['formal'])) + r""" women) because in some surveys telling anyone could not be distinguished from seeking help, and in others no formal source was listed. Each panel has its own scale.}
 \label{fig:cascade}
 \end{figure}
-
-\subsection{Help-seeking has fallen since 2005}\label{sec:trends}
-Seeking any help fell over two decades (figure~\ref{fig:trends}). Across all """ + str(nS) + r""" surveys the odds of seeking help fell by about 30\% per decade (OR """ + t39("sought_any") + r"""; posterior probability of decline """ + pdec("sought_any") + r"""; random-effects test """ + mp("sought_any") + r"""), a fall of """ + pch("sought_any") + r""" between 2005 and 2025. The decline was similar in West (""" + t39("sought_any", "West") + r"""), Central (""" + t39("sought_any", "Central") + r""") and East Africa (""" + t39("sought_any", "East") + r"""; region-by-time interaction $p=""" + f"{P39m.loc['sought_any', 'p_region_x_time']:.2f}" + r"""$). Telling anyone also fell (""" + t39("told") + r"""; """ + mp("told") + r"""), whereas formal help did not change overall (""" + t39("formal") + r"""; """ + mp("formal") + r""") and tended to rise in East Africa (""" + t39("formal", "East") + r"""). Adjustment for the women's characteristics did not change the trend: within countries, the adjusted odds of seeking help fell by """ + f"{100 * (1 - ts.OR):.0f}" + r"""\% per decade (OR """ + orc(ts) + r"""; """ + orc(tr6) + r""" in DHS phase 6 or later; """ + str(ndec) + r""" of """ + str(ntr) + r""" countries declined), persisted among women with partner violence after adjusting for severity and injury (""" + orc(ss) + r"""), and occurred while past-year victimisation also tended to fall (""" + orc(vt) + r"""). Southern Africa had no repeated surveys, so its trend could not be estimated. A model without a trend predicted worse and could not reproduce the observed decline (Bayesian $p$ for the slope """ + f"{MC39[(MC39.outcome == 'sought_any') & (MC39.model == 'T0')].pB_slope.iloc[0]:.2f}" + r"""), the primary model passed all posterior predictive checks of the trend, and the decline was unchanged under alternative priors (OR per decade """ + f"{SN39[SN39.outcome == 'sought_any'].OR_decade.min():.2f}--{SN39[SN39.outcome == 'sought_any'].OR_decade.max():.2f}" + r"""; appendix tables~\ref{tab:trendchecks} and~\ref{tab:trendsens}).
+""" + TYPE_TEXT + r"""
+\subsection{Seeking help has fallen, mainly in the past decade}\label{sec:trends}
+Seeking any help fell (figure~\ref{fig:trends}). Across all """ + str(nS) + r""" surveys the odds of seeking help fell by about 30\% per decade (OR """ + t39("sought_any") + r"""; posterior probability of decline """ + pdec("sought_any") + r"""; random-effects test """ + mp("sought_any") + r"""), a fall of """ + pch("sought_any") + r""" between 2005 and 2025. The decline was similar in West (""" + t39("sought_any", "West") + r"""), Central (""" + t39("sought_any", "Central") + r""") and East Africa (""" + t39("sought_any", "East") + r"""; region-by-time interaction $p=""" + f"{P39m.loc['sought_any', 'p_region_x_time']:.2f}" + r"""$). Telling anyone also fell (""" + t39("told") + r"""; """ + mp("told") + r"""), whereas formal help, the pre-registered primary outcome, did not fall (""" + t39("formal") + r"""; Pr(decline) """ + pdec("formal") + r"""); it rose in East Africa (""" + t39("formal", "East") + r""") and in the frequentist meta-regression (OR per decade """ + f"{f2(P39m.loc['formal', 'OR_decade'])} [95\\% CI {f2(P39m.loc['formal', 'lo'])}--{f2(P39m.loc['formal', 'hi'])}]; " + mp("formal") + r"""). The fall in seeking any help was not linear (post-hoc): within countries with repeated surveys, the odds changed little before 2016 (OR per decade """ + shp("sought_any", "surveys before 2016") + r""") and fell from 2013 onwards (""" + shp("sought_any", "surveys 2013 onwards") + r"""), whereas formal help rose before 2016 (""" + shp("formal", "surveys before 2016") + r""") and was flat afterwards (""" + shp("formal", "surveys 2013 onwards") + r"""). Because the fall coincides with DHS phases 7 and 8, questionnaire changes cannot be excluded. Within countries, the trend adjusted for the women's characteristics was similar but less certain (OR per decade """ + orc(ts) + r"""; """ + orc(tr6) + r""" in DHS phase 6 or later; negative in """ + str(ndec) + r""" of """ + str(ntr) + r""" countries), persisted among women with partner violence after adjusting for severity and injury (""" + orc(ss) + r"""), and occurred while past-year victimisation also tended to fall (""" + orc(vt) + r"""). Southern Africa had no repeated surveys, so its trend could not be estimated. Partially pooled trajectories for each country borrowed strongly from the overall trend (between-country SD of slopes """ + f2(sig_b) + r""" on the log-odds scale per decade), so they cannot show which individual countries declined (appendix figure~\ref{fig:countrytrends}). A model without a trend predicted worse and could not reproduce the observed decline (Bayesian $p$ for the slope """ + f"{MC39[(MC39.outcome == 'sought_any') & (MC39.model == 'T0')].pB_slope.iloc[0]:.2f}" + r"""), the primary model passed all posterior predictive checks of the trend, and the decline was unchanged under alternative priors (OR per decade """ + f"{SN39[SN39.outcome == 'sought_any'].OR_decade.min():.2f}--{SN39[SN39.outcome == 'sought_any'].OR_decade.max():.2f}" + r"""; appendix tables~\ref{tab:trendchecks} and~\ref{tab:trendsens}).
 
 \begin{figure}[p]
 \centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/fig_trends_lancet.png}
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{figures/fig_trends.png}
 \caption{\textbf{Trends in disclosure and help-seeking among young women who experienced violence, 2004--2025}\\
-Points are survey-weighted estimates for each of the """ + str(nS) + r""" DHS surveys (size proportional to the number of women); thin lines join a country's rounds. Curves and bands are posterior medians and 95\% credible intervals from a Bayesian hierarchical meta-regression of the survey estimates, with country intercepts and slopes nested in regional and overall means and a survey-level residual. Each panel gives the odds ratio per decade and the posterior probability of a decline; the all-country panels add the Wald test from a frequentist random-effects meta-regression (random intercepts and slopes by country). Southern Africa had no repeated surveys: its panel shows the observed estimates with the overall trend (dashed). Curves are not adjusted for changes in who reports violence; the adjusted within-country trend is given in the text. Each row has its own scale.}
+Points are survey-weighted estimates for each of the """ + str(nS) + r""" DHS surveys (size proportional to the number of women); thin lines join a country's rounds. Curves and dark bands are posterior medians and 95\% credible intervals of the mean curve from a Bayesian hierarchical meta-regression of the survey estimates, with country intercepts and slopes nested in regional and overall means and a survey-level residual. Light bands are 95\% prediction intervals for the true percentage in a new survey of a new country (between-country and survey-level variation added, sampling error excluded). The vertical axis uses the logit scale (the scale of the model), labelled in percentages and the same for all rows, so intervals near 0\% are not visually stretched. Each panel gives the odds ratio per decade and the posterior probability of a decline; the all-country panels add the Wald test from a frequentist random-effects meta-regression (random intercepts and slopes by country). Southern Africa had no repeated surveys: its panel shows the observed estimates with the overall trend (dashed). Curves are not adjusted for changes in who reports violence; the adjusted within-country trend is given in the text. Each row has its own range.}
 \label{fig:trends}
 \end{figure}
 
-\subsection{Help is sought at a crisis point}\label{sec:predictors}
-Seeking any help was more likely after injury from partner violence (OR """ + orc(inj) + r"""), severe physical violence (""" + orc(sev) + r"""), both physical and sexual violence (""" + orc(both) + r""") and being formerly in union (""" + orc(form) + r"""; table~\ref{tab:predictors}). These factors raised the probability of seeking help by """ + f"{f1(rdt('partner', 'severe')[0])}" + r""" to """ + f"{f1(rdt('partner', 'injury')[0])}" + r""" percentage points (injury """ + "{:.1f} [95\\% CrI {:.1f}--{:.1f}]".format(*rdt('partner', 'injury')) + r"""; appendix table~\ref{tab:robust}) and were also associated with telling anyone (injury """ + orc(injt) + r"""; severe violence """ + orc(sevt) + r"""). Partner alcohol use (""" + orc(alc) + r"""; credible in West and Central Africa) and current employment (""" + orc(wrk) + r"""; credible in each region) showed smaller associations that were not credible overall. Secondary education (""" + orc(edu) + r"""), wealth (""" + orc(wq) + r""" per quintile), urban residence (""" + orc(urb) + r"""), age (""" + orc(age) + r""" per year) and violence by a non-partner only (""" + orc(npt) + r""") were not associated.
+\subsection{Help-seeking is more likely after severe violence}\label{sec:predictors}
+Seeking any help was more likely after injury from partner violence (OR """ + orc(inj) + r"""), severe physical violence (""" + orc(sev) + r"""), both physical and sexual violence (""" + orc(both) + r""") and being formerly in union (""" + orc(form) + r"""; table~\ref{tab:predictors}). These factors raised the probability of seeking help by """ + f"{f1(rdt('partner', 'severe')[0])}" + r""" to """ + f"{f1(rdt('partner', 'injury')[0])}" + r""" percentage points (injury """ + "{:.1f} [95\\% CrI {:.1f}--{:.1f}]".format(*rdt('partner', 'injury')) + r"""; appendix table~\ref{tab:robust}) and were also associated with telling anyone (injury """ + orc(injt) + r"""; severe violence """ + orc(sevt) + r"""). Partner alcohol use (""" + orc(alc) + r"""; credible in West and Central Africa) and current employment (""" + orc(wrk) + r"""; credible in each region) showed smaller associations that were not credible overall. Secondary education (""" + orc(edu) + r"""), wealth (""" + orc(wq) + r""" per quintile), urban residence (""" + orc(urb) + r"""), age (""" + orc(age) + r""" per year) and violence by a non-partner only (""" + orc(npt) + r""") showed little evidence of association.
 
 All four factors pointed the same way in West, Central and East Africa and in the exploratory Southern African model (appendix figures~\ref{fig:forest_partner} and~\ref{fig:forest_main}; injury """ + f"{f2(S[(S.term=='injury')].iloc[0].OR)} (95\\% CI {f2(S[(S.term=='injury')].iloc[0].lo)}--{f2(S[(S.term=='injury')].iloc[0].hi)})" + r"""). Of """ + str(sum(N['class_sought_any'].values())) + r""" model terms for seeking any help, """ + str(N['class_sought_any'].get('universal', 0)) + r""" were consistent across regions, """ + str(N['class_sought_any'].get('region-specific', 0)) + r""" region-specific and """ + str(N['class_sought_any'].get('uncertain', 0)) + r""" uncertain. Injury, severe violence and both physical and sexual violence replicated in both independent country sets, and """ + str(N['rep_same_sign']) + r"""\% of all estimates had the same sign in the two sets. No country carried more than """ + f1(maxw) + r"""\% of the weight for injury (equation~\ref{eq:weights}).
 
 The associations were robust (appendix table~\ref{tab:robust}): similar among women whose violence all occurred in the past 12 months (injury """ + orc(p38("B4_timing", "partner", "injury")) + r"""), as prevalence ratios (injury """ + orc(p38("B5_pr", "partner", "injury")) + r"""), in one-stage models (injury """ + f"{f2(OS.loc['injury', 'onestage_weighted_OR'])}" + r""" survey-weighted and """ + f"{f2(OS.loc['injury', 'glmm_OR'])}" + r""" in a mixed model) and without the most extreme country. Crude odds ratios were larger (injury """ + orc(p38("B2_crude", "partner", "injury")) + r"""), because severity, injury and type of violence overlap. Education, wealth and urban residence were null in crude, adjusted and reduced models (secondary education: crude """ + orc(p38("B2_crude", "main", "educsecondary+")) + r"""; reduced """ + orc(p38("B3_reduced", "main", "educsecondary+")) + r"""), and no predictor was collinear. Prediction intervals for a new country excluded one for injury (""" + f"{f2(b1('partner', 'injury').PI_lo)}--{f2(b1('partner', 'injury').PI_hi)}" + r""") but not for severe violence (""" + f"{f2(b1('partner', 'severe').PI_lo)}--{f2(b1('partner', 'severe').PI_hi)}" + r""") or being formerly in union (""" + f"{f2(b1('main', 'maritalformer').PI_lo)}--{f2(b1('main', 'maritalformer').PI_hi)}" + r"""): these associations may be weak in some countries.
 
-Formal help could be modelled in only ten countries (six for partner-violence items, all in East Africa); estimates pointed the same way (injury """ + orc(injf) + r""").
+Formal help could be modelled in only """ + str(nfm) + r""" countries (""" + str(nfp) + r""" for partner-violence items, all in """ + " and ".join(f"{x} Africa" for x in fp_reg) + r"""); estimates pointed the same way (injury """ + orc(injf) + r"""). In the registered analysis of women of all ages, which had more events, injury (""" + orc(aa("partner", "injury", "formal")) + r"""; """ + str(int(aa("partner", "injury", "formal").countries)) + r""" countries) and severe violence (""" + orc(aa("partner", "severe", "formal")) + r""") were associated with formal help.
 
-In VACS, girls had higher odds than boys of seeking help after sexual violence (OR """ + orc(girl) + r""") and of receiving services (""" + orc(girl_r) + r"""); intervals were wide because few boys reported sexual violence.
+In VACS, boys who experienced sexual violence told someone less often than girls, but after adjustment the difference between girls and boys in seeking help was uncertain (OR for girls vs boys """ + orc(girl) + r"""; receiving services """ + orc(girl_r) + r"""); few boys reported sexual violence, and in two countries no boy sought help, which required penalised estimation. After physical violence, boys sought help at least as often as girls (OR for girls """ + orc(girl_p) + r""").
 
 
 \begin{table}[t]
@@ -481,30 +613,31 @@ In VACS, girls had higher odds than boys of seeking help after sexual violence (
 In the harmonised analysis (""" + fmt(nD) + r""" young women in DHS; """ + fmt(nG) + r""" girls in VACS; appendix table~\ref{tab:harm}), both types of violence were associated with seeking any help to a similar degree in both surveys (DHS OR """ + p37("sought_any", "both", "DHS") + r"""; VACS """ + p37("sought_any", "both", "VACS") + r"""; ratio """ + p37s("sought_any", "both", "ratio_VACS_DHS") + r"""; pooled """ + p37("sought_any", "both", "pooled") + r"""). For telling anyone the association was stronger in VACS (""" + p37s("told", "both", "VACS") + r""" vs """ + p37s("told", "both", "DHS") + r"""; ratio """ + p37s("told", "both", "ratio_VACS_DHS") + r"""), possibly because VACS asks about telling once for each type of violence. A female household head tended to be associated with telling anyone (pooled """ + p37s("told", "hh_female", "pooled") + r""") but not with seeking help (""" + p37s("sought_any", "hh_female", "pooled") + r"""). Age and rural residence were not associated in either survey (for age and telling anyone the surveys differed formally, but both estimates were close to one, DHS """ + p37s("told", "age", "DHS") + r""", VACS """ + p37s("told", "age", "VACS") + r""" per year). Results held with the programme difference fixed at zero and in the five countries with both surveys.
 
 \subsection{Model checking}\label{sec:diag}
-All """ + str(len(P)) + r""" pooled estimates converged ($\hat R\le """ + f"{P.rhat_max.max():.3f}" + r"""$; minimum bulk effective sample size """ + str(int(P.ess_min.min())) + r"""); """ + str(n_div) + r""" divergent transitions occurred in """ + str(n_divfits) + r""" fits (at most 0.2\% of draws). The priors admitted odds ratios of """ + f"{f2(PPd['lo'])}--{f2(PPd['hi'])}" + r""" for a new country (appendix figure~\ref{fig:priorpred}). The common-effect model misfitted for """ + str(n_m0_misfit) + r""" of """ + str(n_terms) + r""" factors ($p_B<0.05$ for the $\chi^2$ discrepancy), confirming between-country heterogeneity; the primary model reproduced every discrepancy ($p_B$ """ + f"{f2(_pb_ok[0])}--{f2(_pb_ok[-1])}" + r""") except the largest estimate for both types of violence (Togo, OR """ + f"{f2(TGx.togo_OR)}" + r"""; excluding Togo, """ + f"{f2(TGx.OR_without_togo)} [{f2(TGx.lo)}--{f2(TGx.hi)}]" + r"""; appendix table~\ref{tab:ppc}, figure~\ref{fig:ppc}). DIC, WAIC and cross-validation did not favour the common-effect model. The model without regions predicted marginally better in """ + str(n_m1_better) + r""" of """ + str(2 * n_terms) + r""" comparisons (difference in expected log predictive density at most """ + f"{max_delpd:.1f}" + r""", below the threshold for a meaningful difference\cite{sivula2022}) with nearly identical odds ratios; we kept the regional model, which answers the study question and is more conservative (appendix table~\ref{tab:ic}). Pooled odds ratios were insensitive to the prior on between-region variation, although the width of the all-region intervals was not (appendix table~\ref{tab:priorsens}).
+All """ + str(len(P)) + r""" pooled estimates converged ($\hat R\le """ + f"{P.rhat_max.max():.3f}" + r"""$; minimum bulk effective sample size """ + str(int(P.ess_min.min())) + r"""); """ + str(n_div) + r""" divergent transitions occurred in """ + str(n_divfits) + r""" fits (at most """ + f"{max_div_pct:.1f}" + r"""\% of draws). The priors admitted odds ratios of """ + f"{f2(PPd['lo'])}--{f2(PPd['hi'])}" + r""" for a new country (appendix figure~\ref{fig:priorpred}). The common-effect model misfitted for """ + str(n_m0_misfit) + r""" of """ + str(n_terms) + r""" factors ($p_B<0.05$ for the $\chi^2$ discrepancy), confirming between-country heterogeneity; the primary model reproduced every discrepancy ($p_B$ """ + f"{f2(_pb_ok[0])}--{f2(_pb_ok[-1])}" + r""") except the largest estimate for both types of violence (Togo, OR """ + f"{f2(TGx.togo_OR)}" + r"""; excluding Togo, """ + f"{f2(TGx.OR_without_togo)} [{f2(TGx.lo)}--{f2(TGx.hi)}]" + r"""; appendix table~\ref{tab:ppc}, figure~\ref{fig:ppc}). DIC, WAIC and cross-validation did not favour the common-effect model. The model without regions predicted marginally better in """ + str(n_m1_better) + r""" of """ + str(2 * n_terms) + r""" comparisons (difference in expected log predictive density at most """ + f"{max_delpd:.1f}" + r""", below the threshold for a meaningful difference\cite{sivula2022}) with nearly identical odds ratios; we kept the regional model, which answers the study question and is more conservative (appendix table~\ref{tab:ic}). Pooled odds ratios were insensitive to the prior on between-region variation, although the width of the all-region intervals was not (appendix table~\ref{tab:priorsens}).
 
 \section{Discussion}\label{sec:discussion}
 \noindent\todo{Outline for drafting; literature led by DM. The previous prose is saved in the archive folder of this Overleaf project. Target about 1000 words. Numbers below are generated from the current results.}
 
 \noindent\textbf{Paragraph 1. Principal findings}
 \begin{itemize}\setlength{\itemsep}{1pt}
-\item Help-seeking among young survivors fell over two decades (OR per decade """ + t39("sought_any") + r"""; about """ + f"{-P39s[(P39s.outcome == 'sought_any') & (P39s.scope == 'All')].pp_2005_2025.iloc[0]:.0f}" + r""" percentage points 2005--2025), in every region with repeated surveys and after adjustment; formal help did not rise.
-\item Nearly all young survivors (""" + f"{not_formal:.0f}" + r"""\%) never reached formal services; about half told someone (""" + f"{f1(At.pct)}" + r"""\%) and a third sought help (""" + f"{f1(As.pct)}" + r"""\%).
-\item Help was sought at a crisis point: injury, severe violence, both types of violence and the end of the relationship raised the probability by """ + f"{f1(rdt('partner', 'severe')[0])}" + r""" to """ + f"{f1(rdt('partner', 'injury')[0])}" + r""" percentage points, consistently across regions and in independent countries; wealth and education made no difference.
-\item Boys sought help even less often than girls (VACS).
+\item Seeking any help fell (OR per decade """ + t39("sought_any") + r"""; about """ + f"{-P39s[(P39s.outcome == 'sought_any') & (P39s.scope == 'All')].pp_2005_2025.iloc[0]:.0f}" + r""" percentage points 2005--2025), mostly after about 2013 and in every region with repeated surveys; formal help, the registered primary outcome, did not fall.
+\item Nearly all young survivors (""" + f"{not_formal:.0f}" + r"""\%) never sought formal help; about half told someone (""" + f"{f1(At.pct)}" + r"""\%) and a third sought help (""" + f"{f1(As.pct)}" + r"""\%).
+\item Help-seeking was more likely after injury, severe violence, both types of violence and the end of the relationship (higher probability by """ + f"{f1(rdt('partner', 'severe')[0])}" + r""" to """ + f"{f1(rdt('partner', 'injury')[0])}" + r""" percentage points), consistently across regions and in independent countries; little association with wealth or education.
+\item Boys disclosed sexual violence less often than girls (VACS), but adjusted differences in seeking help were uncertain.
 \end{itemize}
 
 \noindent\textbf{Paragraph 2. Comparison with other studies}
 \begin{itemize}\setlength{\itemsep}{1pt}
-\item Levels: consistent with multi-country DHS analyses of women of all ages\cite{palermo2014,aboagye2023,goodson2021,stiller2025} and with VACS (lower among boys).\cite{sumner2015,pereira2020,velloza2022,denhard2024}
-\item Determinants: severity associated with help-seeking, as in earlier work;\cite{goodson2021,ayebeng2024} unlike some pooled analyses, no association with wealth or education in crude, adjusted or reduced models.\cite{aboagye2023}
+\item Levels: consistent with multi-country DHS analyses of women of all ages\cite{palermo2014,aboagye2023,goodson2021,stiller2025} and with VACS (lower disclosure among boys).\cite{sumner2015,pereira2020,velloza2022,denhard2024}
+\item Determinants: severity associated with help-seeking, as in earlier work;\cite{goodson2021,ayebeng2024} unlike some pooled analyses, little association with wealth or education in crude, adjusted or reduced models.\cite{aboagye2023}
 \item Method: partial pooling showed that associations are shared across regions, quantified between-country variation (prediction intervals) and replicated findings, which single pooled models cannot do.
 \end{itemize}
 
 \noindent\textbf{Paragraph 3. Interpretation}
 \begin{itemize}\setlength{\itemsep}{1pt}
-\item Help is sought at a crisis point (injury, severity, end of the relationship), consistent with help-seeking models.\cite{liang2005,rickwood2005}
-\item Informal networks dominate (own family """ + f"{hs('src_family'):.0f}" + r"""\%; police """ + f"{hs('src_police'):.1f}" + r"""\%; health workers """ + f"{hs('src_health'):.1f}" + r"""\%), so families and community responders are the first point of contact.
+\item Help-seeking concentrated after severe harm (injury, severity, end of the relationship), consistent with help-seeking models;\cite{liang2005,rickwood2005} lifetime measures cannot show whether help came at that point.
+\item Family members were named for about """ + f"{NPP['family']:.0f}" + r"""\% of non-partner physical violence (post-hoc), yet family was the main source of help.
+\item Informal networks dominate among those who sought help (own family """ + f"{hs('src_family'):.0f}" + r"""\%; police """ + f"{hs('src_police'):.1f}" + r"""\%; health workers """ + f"{hs('src_health'):.1f}" + r"""\%), so families and community responders are the first point of contact.
 \item The regional difference lies in the level of formal help (West """ + f"{f1(reg[('formal','West')].pct)}" + r"""\% to Southern """ + f"{f1(reg[('formal','Southern')].pct)}" + r"""\%), not in who seeks help; consistent with differences in service availability, which we could not measure.\cite{garciamoreno2015}
 \end{itemize}
 
@@ -525,7 +658,7 @@ All """ + str(len(P)) + r""" pooled estimates converged ($\hat R\le """ + f"{P.r
 \item Cross-sectional: associations may run both ways (seeking help may lead to leaving the partner).
 \item Lifetime help-seeking, observed only among women who disclosed violence to the interviewer; reporting depends on survey methods.\cite{cullen2023,palermo2014}
 \item Formal help too rare for regional comparison; VACS covers only East and Southern Africa and does not identify perpetrators; the perpetrator of forced sex could not be identified in """ + str(n_d127_old) + r""" DHS surveys.
-\item Trends mix real change with questionnaire change; prediction intervals show that some associations may be weak in individual countries; the regional model was kept although a model without regions predicted marginally better for some factors.
+\item Most of the fall occurred after about 2013, with DHS phases 7 and 8, so questionnaire change cannot be excluded; formal help, the registered primary outcome, was too rare among young women for well-powered models; prediction intervals show that some associations may be weak in individual countries; the regional model was kept although a model without regions predicted marginally better for some factors.
 \end{itemize}
 
 \noindent\textbf{Paragraph 7. Conclusion}
@@ -534,7 +667,7 @@ All """ + str(len(P)) + r""" pooled estimates converged ($\hat R\le """ + f"{P.r
 \end{itemize}
 
 \section*{Contributors}
-\todo{To be agreed. Proposed: ST conceived the study, built the data, did the analysis and wrote the first draft; DM led the literature review and the introduction and discussion; SF and LC contributed to design and interpretation. All authors had access to the data and approved the final version.}
+\todo{To be agreed}
 
 \section*{Declaration of interests}
 We declare no competing interests.
@@ -572,6 +705,7 @@ DHS data are available from the DHS Program (\url{https://dhsprogram.com}) on re
 \bibitem{riley2011} Riley RD, Higgins JPT, Deeks JJ. Interpretation of random effects meta-analyses. \textit{BMJ} 2011; \textbf{342}: d549.
 \bibitem{zou2004} Zou G. A modified Poisson regression approach to prospective studies with binary data. \textit{Am J Epidemiol} 2004; \textbf{159}: 702--06.
 \bibitem{bates2015} Bates D, M\"achler M, Bolker B, Walker S. Fitting linear mixed-effects models using lme4. \textit{J Stat Softw} 2015; \textbf{67}: 1--48.
+\bibitem{firth1993} Firth D. Bias reduction of maximum likelihood estimates. \textit{Biometrika} 1993; \textbf{80}: 27--38.
 \bibitem{fox1992} Fox J, Monette G. Generalized collinearity diagnostics. \textit{J Am Stat Assoc} 1992; \textbf{87}: 178--83.
 \bibitem{worldpop2025} WorldPop. Global2 age and sex structures, release R2025A. Southampton: University of Southampton, 2025.
 \bibitem{aboagye2023} Aboagye RG, Seidu A-A, Cadri A, et al. Ending violence against women: help-seeking behaviour of women exposed to intimate partner violence in sub-Saharan Africa. \textit{PLoS One} 2023; \textbf{18}: e0291913.
@@ -593,7 +727,7 @@ DHS data are available from the DHS Program (\url{https://dhsprogram.com}) on re
 \bibitem{ellsberg2015} Ellsberg M, Arango DJ, Morton M, et al. Prevention of violence against women and girls: what does the evidence say? \textit{Lancet} 2015; \textbf{385}: 1555--66.
 \end{thebibliography}
 
-""" + APP.build(tableS1, n37d, n37v, SRC_TABLE, FOREST_FIGS, METHODS_DETAIL) + r"""
+""" + APP.build(tableS1, n37d, n37v, SRC_TABLE, FOREST_FIGS, METHODS_DETAIL, TYPE_TABLES + EXTRA_APP) + r"""
 \end{document}
 """
 tex = lancet(tex)

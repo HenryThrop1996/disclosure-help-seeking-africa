@@ -1,12 +1,12 @@
 # 52_disclosure_trends.R - Pre-registration 33, amendment A5 (run once): trends in help-seeking across DHS rounds, and whether drivers changed.
 # Lines below up to '# ===== A5' are copied verbatim from 50_disclosure_predictors.R (data build, Gibbs pooling).
-suppressMessages({library(data.table); library(fixest)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); PIPE <- path.expand("~/Documents/OMS Climate Exposure Pipeline/outputs")
+suppressMessages({library(data.table); library(fixest)}); source(Sys.getenv("FIRTH"))
+ROOT <- Sys.getenv("RR"); PIPE <- path.expand("~/Documents/OMS Climate Exposure Pipeline/outputs")
 SCOPE <- Sys.getenv("P33_SCOPE", "all")   # AMENDMENT A6: "youth" = DHS women 15-24 (aligned with VACS 13-24); "all" = registered 15-49
 AGECONT <- Sys.getenv("AGE_CONT", "0") == "1"   # AMENDMENT A8.3: age in years (youth: centred 20; VACS: centred 18)
 OUT <- file.path(ROOT, "outputs/tables", if (SCOPE == "youth") (if (AGECONT) "P33_youth_v3" else "P33_youth") else "P33"); dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 REG <- c(BF = "West", BJ = "West", CI = "West", GH = "West", GM = "West", GN = "West", LB = "West", ML = "West", MR = "West", NG = "West", SL = "West", SN = "West", TG = "West", NI = "West",
-         AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
+         ST = "Central", AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
          BU = "East", ET = "East", KE = "East", KM = "East", MD = "East", MW = "East", MZ = "East", RW = "East", TZ = "East", UG = "East", ZM = "East", ZW = "East",
          LS = "Southern", NM = "Southern", SZ = "Southern", ZA = "Southern")
 SPLIT <- fread(file.path(ROOT, "data/derived/split_countries.csv")); SET <- setNames(SPLIT$set, SPLIT$country)

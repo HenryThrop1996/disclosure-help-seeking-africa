@@ -2,7 +2,7 @@
 # time (decades from 2015), with random intercepts and slopes by country (REML, metafor::rma.mv); Wald tests of the slope and of the
 # region x time interaction (West, Central, East; Southern has no repeated surveys).
 suppressMessages({library(data.table); library(metafor)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy")
+ROOT <- Sys.getenv("RR")
 E <- fread(file.path(ROOT, "outputs/tables/P38_review/P39_survey_estimates.csv"))
 R <- rbindlist(lapply(c("told", "sought_any", "formal"), function(o) {
   d <- E[outcome == o]; d[, vi := se^2]

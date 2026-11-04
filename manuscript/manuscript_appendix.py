@@ -5,7 +5,7 @@ Decimal points are written as ordinary dots; the manuscript's lancet() post-proc
 import re, numpy as np, pandas as pd
 from pathlib import Path
 
-R = Path.home() / "Documents/OMS DHS Births Climate Policy"; V3 = R / "outputs/tables/P33_youth_v3"; P38 = R / "outputs/tables/P38_review"
+R = __import__("pathlib").Path(__import__("os").environ["RR"]); V3 = R / "outputs/tables/P33_youth_v3"; P38 = R / "outputs/tables/P38_review"
 f2 = lambda x: f"{x:.2f}"; f1 = lambda x: f"{x:.1f}"
 ci = lambda o, l, h: f"{f2(o)} ({f2(l)}--{f2(h)})"
 fmtn = lambda n: f"{int(n):,}".replace(",", "\\,")
@@ -32,7 +32,7 @@ def table(label, caption, colspec, header, body, note, size="\\footnotesize", lo
             f"\\begin{{tabular}}{{{colspec}}}\n\\toprule\n{header}\\\\\n\\midrule\n{body}\n\\bottomrule\n\\end{{tabular}}\n"
             f"\\begin{{tablenotes}}\\footnotesize\n\\item {note}\n\\end{{tablenotes}}\n\\end{{threeparttable}}\n\\end{{table}}\n")
 
-def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail=""):
+def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail="", type_tables=""):
     A2 = pd.read_csv(V3 / "A2_country_estimates.csv"); A3 = pd.read_csv(V3 / "A3_pooled_numpyro.csv")
     pool = lambda m, t, o="sought_any": A3[(A3.source == "DHS") & (A3.model == m) & (A3.outcome == o) & (A3.term == t)].iloc[0]
     T38 = pd.read_csv(P38 / "P38_pooled.csv")
@@ -40,7 +40,7 @@ def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail=""
     out = ["\\clearpage\n\\section*{Supplementary appendix}\\label{sec:appendix}\n\\setcounter{table}{0}\\renewcommand{\\thetable}{S\\arabic{table}}\n"
            "\\setcounter{figure}{0}\\renewcommand{\\thefigure}{S\\arabic{figure}}\n"
            "This appendix reports the data, the coding audit, the Bayesian inference framework and its checks, and all pre-registered sensitivity analyses "
-           "(Pre-registrations 33, 37 and 38). Unless stated, estimates are odds ratios (ORs) for seeking any help among young women aged 15--24 years who "
+           "(Pre-registrations 33, 37, 38, 39 and 42, and Correction 5). Unless stated, estimates are odds ratios (ORs) for seeking any help among young women aged 15--24 years who "
            "experienced violence, pooled with the hierarchical model of equation~\\ref{eq:hier}, as posterior medians with 95\\% credible intervals (CrIs).\n"]
 
     # ---------------- A. Data ----------------
@@ -187,6 +187,7 @@ def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail=""
 
     # ---------------- B2. Country forest plots and trend model ----------------
     out.append("\\subsection*{Factors associated with help-seeking, by country}\n" + forest_figs + "\n")
+    out.append(type_tables + "\n")                                    # Pre-reg 42
     TS = pd.read_csv(P38 / "P39_slopes.csv"); TN = pd.read_csv(P38 / "P39_slopes_noresid.csv"); TM = pd.read_csv(P38 / "P39_metafor_tests.csv").set_index("outcome")
     OLt = {"told": "Told anyone", "sought_any": "Sought any help", "formal": "Sought formal help"}
     body = []
@@ -194,7 +195,7 @@ def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail=""
         for sc in ["All", "West", "Central", "East", "Southern"]:
             r = TS[(TS.outcome == o) & (TS.scope == sc)].iloc[0]; r0 = TN[(TN.outcome == o) & (TN.scope == sc)].iloc[0]
             lab = (OLt[o] if sc == "All" else "") ; scl = "All countries" if sc == "All" else sc + (" (not estimable)" if sc == "Southern" else "")
-            pv = TM.loc[o, 'p_slope']; pt = "p$<$0.001" if pv < 0.001 else f"p={pv:.2f}"
+            pv = TM.loc[o, 'p_slope']; pt = "p$<$0.001" if pv < 0.001 else (f"p={pv:.3f}" if pv < 0.01 else f"p={pv:.2f}")
             body.append(f"{lab} & {scl} & {int(r.surveys)} & {ci(r.OR_decade, r.OR_lo, r.OR_hi)} & {f2(r.P_decline)}" +
                         f" & {ci(r0.OR_decade, r0.OR_lo, r0.OR_hi)} & " + (f"{ci(TM.loc[o, 'OR_decade'], TM.loc[o, 'lo'], TM.loc[o, 'hi'])}, {pt}" if sc == "All" else "") + " \\\\")
         body.append("\\addlinespace")
@@ -204,7 +205,7 @@ def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail=""
                      "Priors: $A\\sim\\mathcal N(\\text{logit }0.3, 1.5)$ (0.03 for formal help), $B\\sim\\mathcal N(0,1)$, $\\sigma_a,\\omega_a\\sim$ Half-Normal(1), $\\sigma_b,\\omega_b,\\sigma_e\\sim$ Half-Normal(0.5). "
                      "The registered model had no survey residual ($\\sigma_e$); it was added before interpretation because the residual variation between a country's surveys would otherwise be treated as sampling error (Pre-registration 39, deviation 1). "
                      "Random-effects meta-regression: metafor, REML, random intercepts and slopes by country and a survey-level residual; Wald test of the slope. Southern Africa has no repeated surveys, so its slope is informed only by the other regions. "
-                     "One survey with no formal-help events (Mozambique 2022) used a 0.5 continuity correction. Change from 2005 to 2025 (overall curve): " + "; ".join(f"{OLt[o].lower()} {f1(TS[(TS.outcome == o) & (TS.scope == 'All')].pp_2005_2025.iloc[0])} percentage points ({f1(TS[(TS.outcome == o) & (TS.scope == 'All')].pp_lo.iloc[0])} to {f1(TS[(TS.outcome == o) & (TS.scope == 'All')].pp_hi.iloc[0])})" for o in OLt) + ".", size="\\scriptsize", sep="3pt"))
+                     "Surveys with no formal-help events (Mali 2012--13, Mozambique 2022, Senegal 2017) used a 0.5 continuity correction (Correction 5). Change from 2005 to 2025 (overall curve): " + "; ".join(f"{OLt[o].lower()} {f1(TS[(TS.outcome == o) & (TS.scope == 'All')].pp_2005_2025.iloc[0])} percentage points ({f1(TS[(TS.outcome == o) & (TS.scope == 'All')].pp_lo.iloc[0])} to {f1(TS[(TS.outcome == o) & (TS.scope == 'All')].pp_hi.iloc[0])})" for o in OLt) + ".", size="\\scriptsize", sep="3pt"))
 
     # ---------------- B3. Bayesian workflow for the trend model (Pre-registration 39, addendum B) ----------------
     PPt = pd.read_csv(P38 / "P39B_prior_predictive.csv").set_index("outcome"); MCt = pd.read_csv(P38 / "P39B_model_checks.csv"); SNt = pd.read_csv(P38 / "P39B_prior_sensitivity.csv")
@@ -306,7 +307,7 @@ def build(harm_rows, n37d, n37v, src_table="", forest_figs="", methods_detail=""
 
     # ---------------- D. Pre-registration ----------------
     log = [l.split("  ", 2) for l in (R / "docs/preregistration/PREREGISTRATION_hashes.log").read_text().splitlines() if l.strip()]
-    keep = [x for x in log if len(x) == 3 and re.search(r"PREREGISTRATION_3[3-8]", x[2])]
+    keep = [x for x in log if len(x) == 3 and re.search(r"PREREGISTRATION_3[3-9]|PREREGISTRATION_42|CORRECTION_5", x[2])]
     body = "\n".join(f"{x[0][:16]} & \\texttt{{{x[1][:16]}\\ldots}} & {texesc(x[2])} \\\\" for x in keep)
     out.append(table("tab:prereg", "\\textbf{Pre-registration record}", "l>{\\ttfamily}l>{\\raggedright\\arraybackslash}p{8.2cm}", "Time stamp & SHA-256 (first 16 characters) & Document and stage", body,
                      "Each analysis plan, amendment and result was hashed when written; a plan was always hashed before the analysis it describes was run. Full documents and hashes are in the code repository.", long=True))

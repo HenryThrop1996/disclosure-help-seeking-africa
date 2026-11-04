@@ -2,10 +2,10 @@
 #   (a) trend in past-12-month victimisation among ALL DV-module women aged 15-24 (countries with >= 2 rounds)
 #   (b) trend in sought any help among partner-violence victims, additionally adjusted for severe violence and injury
 # Country estimates are written here; pooling is done in NumPyro (pool_numpyro.py).
-suppressMessages({library(data.table); library(fixest)})
-ROOT <- path.expand("~/Documents/OMS DHS Births Climate Policy"); OUT <- file.path(ROOT, "outputs/tables/P33_youth_v3"); dir.create(OUT, showWarnings = FALSE)
+suppressMessages({library(data.table); library(fixest)}); source(Sys.getenv("FIRTH"))
+ROOT <- Sys.getenv("RR"); OUT <- file.path(ROOT, "outputs/tables/P33_youth_v3"); dir.create(OUT, showWarnings = FALSE)
 REG <- c(BF = "West", BJ = "West", CI = "West", GH = "West", GM = "West", GN = "West", LB = "West", ML = "West", MR = "West", NG = "West", SL = "West", SN = "West", TG = "West",
-         AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
+         ST = "Central", AO = "Central", CD = "Central", CM = "Central", GA = "Central", TD = "Central",
          BU = "East", ET = "East", KE = "East", KM = "East", MD = "East", MW = "East", MZ = "East", RW = "East", TZ = "East", UG = "East", ZM = "East", ZW = "East",
          LS = "Southern", NM = "Southern", SZ = "Southern", ZA = "Southern")
 W <- rbind(fread(file.path(ROOT, "data/derived/women_disclosure.csv.gz")), fread(file.path(ROOT, "data/derived/women_disclosure_heldout.csv.gz")), fill = TRUE)

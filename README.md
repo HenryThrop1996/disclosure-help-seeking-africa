@@ -1,10 +1,10 @@
 # Help-seeking after violence among adolescents and young people in sub-Saharan Africa
 
 Code for a multi-country analysis of disclosure and help-seeking after physical and sexual violence among young people aged 13–24 years,
-using **64 Demographic and Health Surveys (DHS) from 32 countries** and **eight Violence Against Children and Youth Surveys (VACS)**.
+using **71 Demographic and Health Surveys (DHS) from 33 countries** and **eight Violence Against Children and Youth Surveys (VACS)**.
 
 > **Status:** manuscript in preparation (Oxford Martin Programme on Climate and Child Health / Accelerate Hub, University of Oxford).
-> Results below are from the current pre-registered analysis and may change before publication. The survey data are **not** included (see [Data](#2-data)).
+> Results below are from the current pre-registered analysis, including **Correction 5** (November 2026: country models with separation refitted with Firth's penalised likelihood; seven DHS surveys without GPS data added; zero-event surveys in the trend inputs given a continuity correction), and may change before publication. The survey data are **not** included (see [Data](#2-data)).
 
 **Contents:** [1 Questions](#1-questions) · [2 Data](#2-data) · [3 Pipeline](#3-analysis-pipeline) · [4 Model](#4-model-construction) · [5 Results](#5-results) · [6 Reproduce](#6-repository-structure-and-how-to-reproduce) · [7 Pre-registration](#7-pre-registration) · [8 Software](#8-software)
 
@@ -21,8 +21,8 @@ using **64 Demographic and Health Surveys (DHS) from 32 countries** and **eight 
 
 | | DHS | VACS |
 |---|---|---|
-| Respondents | 49,313 women aged 15–24 years who reported physical or sexual violence | 48,910 girls and boys aged 13–24 years (16,238 reported violence) |
-| Coverage | 64 surveys, 32 countries, 2004–2025, West, Central, East and Southern Africa | 8 countries, one round each, 2013–2023, East and Southern Africa |
+| Respondents | 55,081 women aged 15–24 years who reported physical or sexual violence | 48,910 girls and boys aged 13–24 years (16,238 reported violence) |
+| Coverage | 71 surveys, 33 countries, 2004–2025, West, Central, East and Southern Africa | 8 countries, one round each, 2013–2023, East and Southern Africa |
 | Violence | physical since age 15; sexual by partners and others | sexual and physical asked separately |
 | Help-seeking | told anyone; sought help and from whom (lifetime) | told; knew where to get help; sought help; received services (lifetime) |
 | Weights | domestic violence module weight `d005/1e6` (sums to sample size) | expansion weights, normalised within country |
@@ -41,7 +41,7 @@ Every box is a script: **click a box** to open its code, or use the numbered tab
 flowchart TD
     A1[("DHS Individual Recode files<br/>raw .dta in .zip")]
     A2[("VACS public-use files")]
-    D[["Analysis sample<br/>49,313 young women, 64 surveys"]]
+    D[["Analysis sample<br/>55,081 young women, 71 surveys"]]
     B1["41_build_disclosure_women.py<br/>violence, outcomes, predictors"]
     B2["41c_add_hh_head.py<br/>sex of household head"]
     B3["41d_correction4.py<br/>help sources, perpetrator audit"]
@@ -168,6 +168,10 @@ flowchart TD
 | 12 Manuscript | [`71_build_latex_manuscript.py`](manuscript/71_build_latex_manuscript.py) | manuscript |
 | 12 Manuscript | [`manuscript_appendix.py`](manuscript/manuscript_appendix.py) | appendix tables |
 | 13 Verify | [`72_verify_manuscript_numbers.py`](manuscript/72_verify_manuscript_numbers.py) | independent number check |
+| Correction 5 | [`firth_helper.R`](analysis/firth_helper.R) | Firth refit of separated country models (sourced by every stage 1 script) |
+| Perpetrator × type | [`41e_perpetrator_type.py`](build/41e_perpetrator_type.py), [`95_p42_cascade_by_type.R`](analysis/95_p42_cascade_by_type.R), [`96_p42_country_models.R`](analysis/96_p42_country_models.R), [`97_p42_pool.py`](pooling/97_p42_pool.py), [`61f_fig_cascade_by_type_lancet.R`](figures/61f_fig_cascade_by_type_lancet.R) | disclosure by perpetrator and type of violence (pre-registration 42) |
+| Uncertainty | [`84b_trend_predictive.py`](pooling/84b_trend_predictive.py), [`84c_cascade_pooled.py`](pooling/84c_cascade_pooled.py), [`61g_fig_country_trends.R`](figures/61g_fig_country_trends.R) | prediction bands, country trajectories, typical-country cascade |
+| Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
 
@@ -253,12 +257,12 @@ Code: [`harmonised/73_p37_country_models.R`](harmonised/73_p37_country_models.R)
 
 | Step | All countries (sample-weighted) | Population-weighted | West | Central | East | Southern |
 |---|---|---|---|---|---|---|
-| Told anyone | 46.1% (45.4–46.8) | 44.0% | 42.5% | 44.8% | 48.8% | 56.4% |
-| Sought any help | 32.9% (32.3–33.5) | 29.8% | 31.0% | 32.7% | 34.6% | 29.6% |
-| Sought formal help | 2.6% (2.4–2.8) | 2.3% | 1.3% | 2.2% | 3.6% | 5.0% |
+| Told anyone | 46.2% (45.5–46.9) | 44.1% | 42.3% | 44.7% | 49.0% | 56.4% |
+| Sought any help | 33.0% (32.5–33.6) | 29.9% | 30.7% | 32.6% | 34.9% | 29.6% |
+| Sought formal help | 2.6% (2.4–2.8) | 2.3% | 1.2% | 2.2% | 3.6% | 5.0% |
 
-Help came mostly from family (80%), friends or neighbours (21%) and the partner's family (20%);
-4.9% went to the police and 1.6% to a health worker.
+Help came mostly from family (80%), friends or neighbours (19%) and the partner's family (20%);
+4.9% went to the police and 1.7% to a health worker (percentages of those who sought help).
 In VACS, after sexual violence, 50.4% of girls and 33.9% of boys told someone, and 10.8% and 5.7% sought help.
 
 <p align="center"><img src="docs/figures/fig_cascade_forest_lancet.png" width="760" alt="Disclosure cascade by country"></p>
@@ -269,15 +273,15 @@ Odds ratios (95% credible intervals) from the two-stage model; the last column i
 
 | Factor | West | Central | East | Southern (exploratory) | All regions | Prediction interval |
 |---|---|---|---|---|---|---|
-| Injury from partner violence (vs none)ᵃ | 2.23 (1.87–2.85) | 2.06 (1.57–2.51) | 2.16 (1.87–2.51) | 2.68 (1.12–6.42) | **2.13 (1.48–2.78)** | 1.06–3.98 |
-| Severe physical violence ᵃ | 1.67 (1.33–2.12) | 1.65 (1.31–2.12) | 1.60 (1.35–1.87) | 1.63 (0.65–4.11) | **1.63 (1.18–2.14)** | 0.81–3.16 |
-| Physical and sexual violence (vs physical only) | 2.08 (1.79–2.48) | 1.97 (1.66–2.40) | 1.80 (1.58–2.05) | 1.42 (0.54–3.71) | **1.93 (1.41–2.58)** | 1.00–3.61 |
-| Formerly in union (vs currently in union) | 1.72 (1.25–2.25) | 1.73 (1.24–2.33) | 1.79 (1.42–2.24) | 1.80 (0.25–12.98) | **1.73 (1.18–2.38)** | 0.68–4.15 |
-| Partner drinks alcohol ᵃ | 1.25 (1.06–1.52) | 1.27 (1.06–1.59) | 1.13 (1.00–1.28) | 1.92 (0.77–4.79) | **1.21 (0.92–1.63)** | 0.68–2.26 |
-| Currently working | 1.22 (1.10–1.35) | 1.21 (1.07–1.40) | 1.16 (1.06–1.26) | 1.11 (0.55–2.23) | **1.19 (0.98–1.48)** | 0.78–1.82 |
-| Secondary or higher education (vs none) | 1.19 (0.94–1.52) | 1.18 (0.88–1.66) | 1.13 (0.88–1.43) | 2.81 (0.33–24.15) | **1.16 (0.84–1.61)** | 0.45–2.90 |
-| Household wealth (per quintile) | 1.00 (0.95–1.06) | 0.99 (0.92–1.05) | 0.99 (0.94–1.02) | 1.06 (0.83–1.35) | **0.99 (0.88–1.11)** | 0.77–1.28 |
-| Urban residence (vs rural) | 1.06 (0.91–1.25) | 1.28 (1.03–1.64) | 1.05 (0.91–1.21) | 0.67 (0.33–1.33) | **1.12 (0.78–1.62)** | 0.54–2.34 |
+| Injury from partner violence (vs none)ᵃ | 2.21 (1.87–2.80) | 2.04 (1.58–2.46) | 2.10 (1.84–2.41) | 2.45 (1.12–5.34) | **2.10 (1.57–2.70)** | 1.07–3.93 |
+| Severe physical violence ᵃ | 1.64 (1.29–2.03) | 1.64 (1.29–2.11) | 1.60 (1.33–1.87) | 1.55 (0.67–3.59) | **1.62 (1.19–2.09)** | 0.77–3.22 |
+| Physical and sexual violence (vs physical only) | 2.17 (1.83–2.60) | 1.98 (1.61–2.43) | 1.70 (1.50–1.97) | 1.42 (0.54–3.71) | **1.91 (1.32–2.72)** | 0.86–3.98 |
+| Formerly in union (vs currently in union) | 1.61 (1.16–2.08) | 1.68 (1.22–2.29) | 1.74 (1.37–2.16) | 1.80 (0.25–12.98) | **1.66 (1.13–2.28)** | 0.61–4.08 |
+| Partner drinks alcohol ᵃ | 1.25 (1.06–1.51) | 1.27 (1.07–1.57) | 1.13 (1.00–1.26) | 1.78 (0.78–4.04) | **1.21 (0.91–1.64)** | 0.66–2.24 |
+| Currently working | 1.20 (1.10–1.33) | 1.20 (1.07–1.39) | 1.16 (1.07–1.26) | 1.11 (0.55–2.23) | **1.19 (0.99–1.44)** | 0.80–1.74 |
+| Secondary or higher education (vs none) | 1.13 (0.91–1.42) | 1.14 (0.87–1.59) | 1.10 (0.87–1.37) | 2.81 (0.33–24.15) | **1.12 (0.82–1.55)** | 0.45–2.72 |
+| Household wealth (per quintile) | 0.99 (0.95–1.05) | 0.98 (0.91–1.04) | 0.98 (0.94–1.02) | 1.06 (0.83–1.35) | **0.99 (0.86–1.11)** | 0.78–1.26 |
+| Urban residence (vs rural) | 1.04 (0.89–1.21) | 1.28 (1.03–1.64) | 1.04 (0.92–1.18) | 0.67 (0.33–1.33) | **1.11 (0.78–1.61)** | 0.53–2.42 |
 
 ᵃ Among women with partner violence. Southern Africa: one pooled model of Lesotho, Namibia and South Africa (95% CI), not part of "all regions".
 Injury, severe violence and both types of violence **replicated in two independent random halves of countries**; wealth, education and urban residence were null
@@ -289,38 +293,38 @@ in crude, fully adjusted and reduced socio-demographic models.
 
 | Analysis | Injury | Severe violence | Both types | Formerly in union |
 |---|---|---|---|---|
-| Primary (two-stage, Bayesian) | 2.13 (1.48–2.78) | 1.63 (1.18–2.14) | 1.93 (1.41–2.58) | 1.73 (1.18–2.38) |
-| Risk difference, percentage points | +15.8 (8.9 to 21.2) | +10.0 (3.2 to 16.2) | +14.3 (7.8 to 20.3) | +12.4 (3.3 to 20.1) |
-| Prevalence ratio | 1.47 (1.18–1.76) | 1.28 (1.06–1.54) | 1.47 (1.16–1.86) | 1.37 (1.08–1.69) |
-| Violence only in past 12 months | 2.22 (1.55–3.17) | 1.64 (1.13–2.27) | 1.84 (1.37–2.40) | 1.77 (1.11–2.58) |
-| Crude | 2.92 (1.97–3.70) | 2.52 (1.69–3.38) | 2.03 (1.44–2.70) | 1.80 (1.22–2.35) |
-| One-stage, survey-weighted | 2.08 (1.89–2.28) | 1.61 (1.46–1.77) | 1.90 (1.76–2.05) | 1.73 (1.53–1.96) |
-| One-stage mixed model | 2.13 (1.94–2.32) | 1.64 (1.43–1.89) | 1.80 (1.66–1.95) | 1.79 (1.58–2.02) |
+| Primary (two-stage, Bayesian) | 2.10 (1.57–2.70) | 1.62 (1.19–2.09) | 1.91 (1.32–2.72) | 1.66 (1.13–2.28) |
+| Risk difference, percentage points | +15.7 (5.2 to 24.6) | +10.1 (0.3 to 21.1) | +14.2 (1.6 to 28.6) | +11.3 (-2.9 to 25.9) |
+| Prevalence ratio | 1.46 (1.20–1.74) | 1.28 (1.08–1.53) | 1.47 (1.10–1.92) | 1.34 (1.01–1.64) |
+| Violence only in past 12 months | 2.18 (1.52–3.14) | 1.57 (1.11–2.10) | 1.85 (1.36–2.50) | 1.68 (1.04–2.45) |
+| Crude | 2.90 (2.13–3.64) | 2.51 (1.73–3.30) | 1.99 (1.33–2.82) | 1.77 (1.22–2.37) |
+| One-stage, survey-weighted | 2.05 (1.87–2.24) | 1.64 (1.50–1.79) | 1.85 (1.72–1.99) | 1.71 (1.52–1.92) |
+| One-stage mixed model | 2.09 (1.93–2.26) | 1.64 (1.43–1.87) | 1.78 (1.65–1.92) | 1.77 (1.58–1.98) |
 
 ### 5.4 Pooling DHS and VACS (young women and girls 15–24 years)
 
 | Outcome · factor | DHS | VACS | Ratio VACS/DHS | Pooled | Surveys |
 |---|---|---|---|---|---|
-| Sought help · both types of violence | 2.00 (1.59–2.48) | 2.28 (1.67–3.10) | 1.14 (0.87–1.50) | 2.14 (1.69–2.66) | agree |
-| Told anyone · both types of violence | 1.98 (1.51–2.45) | 3.64 (2.71–4.84) | 1.85 (1.49–2.31) | 2.69 (2.07–3.39) | differ |
-| Told anyone · female household head | 1.20 (1.01–1.41) | 1.14 (0.94–1.45) | 0.96 (0.80–1.19) | 1.17 (1.00–1.40) | agree |
-| Sought help · female household head | 1.13 (0.97–1.33) | 1.06 (0.81–1.36) | 0.93 (0.73–1.19) | 1.10 (0.92–1.31) | uncertain |
+| Sought help · both types of violence | 1.97 (1.48–2.49) | 2.32 (1.64–3.13) | 1.18 (0.90–1.54) | 2.14 (1.61–2.71) | agree |
+| Told anyone · both types of violence | 1.95 (1.42–2.44) | 3.70 (2.66–4.92) | 1.90 (1.53–2.38) | 2.68 (1.98–3.38) | differ |
+| Told anyone · female household head | 1.17 (0.98–1.38) | 1.14 (0.94–1.44) | 0.98 (0.82–1.20) | 1.16 (0.98–1.39) | agree |
+| Sought help · female household head | 1.11 (0.95–1.31) | 1.06 (0.81–1.38) | 0.95 (0.73–1.23) | 1.09 (0.91–1.30) | uncertain |
 
-### 5.5 Help-seeking has fallen since 2005
+### 5.5 Seeking help has fallen, mainly in the past decade
 
-Survey-level estimates for all 64 surveys, pooled with a Bayesian hierarchical meta-regression (country intercepts and slopes nested in regional and overall means, survey-level residual), with a frequentist random-effects meta-regression as a formal test:
+Survey-level estimates for all 71 surveys, pooled with a Bayesian hierarchical meta-regression (country intercepts and slopes nested in regional and overall means, survey-level residual), with a frequentist random-effects meta-regression as a formal test:
 
 $$y_{cs}\sim\mathcal N(a_c+b_c t_{cs},\ se_{cs}^2+\sigma_e^2),\quad b_c=B_{r(c)}+\sigma_b z_c,\quad B_r=B+\omega_b u_r$$
 
 | Outcome | All countries: OR per decade (95% CrI) | Pr(decline) | Change 2005–2025 | Meta-regression | West | Central | East |
 |---|---|---|---|---|---|---|---|
-| Told anyone | 0.75 (0.53–1.01) | 0.97 | -14.2 pp (-30.5 to 0.6) | 0.77 (0.66–0.90), p<0.001 | 0.76 (0.58–0.98) | 0.70 (0.46–0.92) | 0.80 (0.66–0.98) |
-| Sought any help | 0.71 (0.52–0.89) | 0.99 | -15.2 pp (-28.1 to -5.3) | 0.72 (0.64–0.81), p<0.001 | 0.70 (0.56–0.84) | 0.71 (0.55–0.89) | 0.74 (0.63–0.88) |
-| Sought formal help | 1.20 (0.72–1.83) | 0.20 | 0.8 pp (-1.7 to 3.8) | 1.22 (0.93–1.60), p=0.14 | 1.10 (0.61–1.69) | 1.24 (0.72–2.11) | 1.33 (0.95–1.88) |
+| Told anyone | 0.77 (0.57–1.01) | 0.97 | -12.8 pp (-27.0 to 0.7) | 0.79 (0.67–0.92), p=0.00 | 0.78 (0.61–1.00) | 0.74 (0.51–0.97) | 0.80 (0.66–0.99) |
+| Sought any help | 0.72 (0.55–0.91) | 0.99 | -14.4 pp (-26.0 to -4.2) | 0.73 (0.65–0.82), p<0.001 | 0.71 (0.58–0.86) | 0.72 (0.57–0.92) | 0.74 (0.63–0.88) |
+| Sought formal help | 1.27 (0.76–1.94) | 0.15 | 1.0 pp (-1.4 to 4.2) | 1.33 (1.04–1.71), p=0.02 | 1.17 (0.65–1.76) | 1.29 (0.76–2.09) | 1.43 (1.03–2.00) |
 
 Code: [`analysis/83_trend_survey_estimates.R`](analysis/83_trend_survey_estimates.R), [`pooling/84_trend_model.py`](pooling/84_trend_model.py), [`analysis/85_trend_metafor.R`](analysis/85_trend_metafor.R), figure [`figures/61e_fig_trends_lancet.R`](figures/61e_fig_trends_lancet.R).
 
-Within countries, adjusted for the women's characteristics, the odds of seeking any help fell by 27% per decade (0.73 (0.54–1.02); 0.69 (0.50–0.96) in DHS phase 6 or later).
+Within countries, the trend adjusted for the women's characteristics was similar but less certain (0.73 (0.54–1.01); 0.68 (0.51–0.99) in DHS phase 6 or later). The fall was not linear (post-hoc): in countries with repeated surveys the odds changed little before 2016 and fell from 2013 onwards, possibly with DHS questionnaire phases 7 and 8. Formal help, the registered primary outcome, did not fall.
 Southern Africa has no repeated surveys, so its trend is not estimated.
 
 <p align="center"><img src="docs/figures/fig_trends_lancet.png" width="760" alt="Trends in disclosure and help-seeking 2004-2025"></p>
@@ -328,9 +332,9 @@ Southern Africa has no repeated surveys, so its trend is not estimated.
 ### 5.6 Model checking
 
 * **Prior predictive:** OR for a new country 95% range 0.09–10.38.
-* **Posterior predictive:** the common-effect model M0 misfitted for 7 of 13 factors (Bayesian p < 0.05); the primary model M2 reproduced every discrepancy (p_B 0.07–0.95) except the largest estimate for both types of violence (Togo; excluding it, 1.88 (1.42–2.39)).
-* **Model comparison:** M1 (no regions) was marginally better than M2 in 5 of 26 comparisons (Δelpd ≤ 1.1, below the threshold of 4 for a meaningful difference); M2 was kept because regional comparison is a study question.
-* **Computation:** R̂ ≤ 1.003; E-BFMI ≥ 0.57. Pooled estimates were reproduced independently with **brms/Stan** (`methods_walkthrough/75_disclosure_walkthrough_brms.Rmd`).
+* **Posterior predictive:** the common-effect model M0 misfitted for 7 of 13 factors (Bayesian p < 0.05); the primary model M2 reproduced every discrepancy (p_B 0.07–0.96) except the largest estimate for both types of violence (Togo; excluding it, 1.86 (1.33–2.55)).
+* **Model comparison:** M1 (no regions) was marginally better than M2 in 4 of 26 comparisons (Δelpd ≤ 1.1, below the threshold of 4 for a meaningful difference); M2 was kept because regional comparison is a study question.
+* **Computation:** R̂ ≤ 1.004; E-BFMI ≥ 0.55. Pooled estimates were reproduced independently with **brms/Stan** (`methods_walkthrough/75_disclosure_walkthrough_brms.Rmd`).
 
 <p align="center"><img src="docs/figures/figS_ppc.png" width="700" alt="Posterior predictive checks"></p>
 
@@ -349,7 +353,7 @@ Southern Africa has no repeated surveys, so its trend is not estimated.
 | `manuscript/` | `71_build_latex_manuscript.py`, `manuscript_appendix.py`, `72_verify_manuscript_numbers.py` | manuscript, appendix, independent number check |
 | `methods_walkthrough/` | `76_step_by_step_guide_codes_weights.Rmd`, `75_disclosure_walkthrough_brms.Rmd` | teaching versions: survey codes and weights; the full analysis in tidyverse + brms |
 
-Paths assume the project folder `~/Documents/OMS DHS Births Climate Policy` with the DHS files in `data/raw/dhs_ir/`; edit `ROOT` at the top of each script to use another location.
+Scripts are run from the project folder, with all scripts placed in its `analysis/` folder (the repository groups them by step), the DHS files in `data/raw/dhs_ir/` and two environment variables: `RR` (project folder) and `FIRTH` (path to `firth_helper.R`), e.g. `export RR=$PWD FIRTH=$PWD/analysis/firth_helper.R P33_SCOPE=youth AGE_CONT=1`. VACS files are read from `~/Documents/OMS VACS Climate Violence`.
 
 ## 7. Pre-registration
 
@@ -383,6 +387,16 @@ The documents will be released with the paper; the time stamps and hashes below 
 | 2026-10-28 14:24 | `ffa566bc53be708b` | PREREGISTRATION 39 trend curves, regional and overall pooling (before models) |
 | 2026-10-28 14:26 | `9ce7a5b3c1370f85` | PREREGISTRATION 39 deviation 1 survey-level residual (before refit) |
 | 2026-10-28 14:27 | `64baf885a5f63a0d` | PREREGISTRATION 39 results appended |
+| 2026-10-28 14:40 | `a6c8eaad1a87027c` | PREREGISTRATION 39 addendum B Bayesian workflow for trends (before running) |
+| 2026-10-28 14:43 | `67a936ac05ff7149` | PREREGISTRATION 39 addendum B results appended |
+| 2026-10-30 08:01 | `9c82d22cab8f4f4d` | PREREGISTRATION 42 disclosure by perpetrator and type (before analysis) |
+| 2026-10-30 08:04 | `4298437b4a6e87a0` | PREREGISTRATION 42 results appended |
+| 2026-11-01 22:20 | `a88e44cf25f1f7e3` | CORRECTION 5 Correction 5 plan (before re-run) |
+| 2026-11-01 22:22 | `cb5fcee94b54843c` | CORRECTION 5 Correction 5 deviation 1: Firth solver (before pooling) |
+| 2026-11-01 22:27 | `e1a13462a02ed32d` | CORRECTION 5 Correction 5 deviation 2: Firth stopping rule (before pooling) |
+| 2026-11-01 22:29 | `7d0abd6b912c9050` | CORRECTION 5 Correction 5 deviation 3: seven added surveys (before models) |
+| 2026-11-04 13:36 | `4d53aae446359893` | CORRECTION 5 Correction 5 deviation 4: zero-event surveys in trend inputs (before re-run) |
+| 2026-11-04 13:43 | `49322780ea5e1083` | CORRECTION 5 Correction 5 note: published formal trend unaffected by deviation 4 |
 
 ## 8. Software
 
