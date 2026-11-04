@@ -31,17 +31,18 @@ m <- merge(af, as.data.frame(cty), by = "iso3", all.x = TRUE)
 cent <- suppressWarnings(st_point_on_surface(m[!is.na(m$rounds), ])); vac <- m[m$iso3 %in% ISO3[VACS], ]
 st_geometry(cent)[cent$iso3 == "ZAF"] <- st_sfc(st_point(c(22.8, -30.6)), crs = st_crs(cent))   # South Africa: label moved west, away from Lesotho
 # small countries whose round count is unreadable inside the border: number placed nearby with a pointer
-CALLOUT <- data.frame(iso3 = c("RWA", "BDI", "COM", "GMB", "TGO", "LSO"), lx = c(25.8, 25.6, 49.5, -17.4, 1.2, 33.8), ly = c(2.6, -6.6, -7.6, 11.2, 3.2, -31.6))
+CALLOUT <- data.frame(iso3 = c("RWA", "BDI", "COM", "GMB", "TGO", "LSO", "STP"), lx = c(25.8, 25.6, 49.5, -17.4, 1.2, 33.8, -2.2), ly = c(2.6, -6.6, -7.6, 11.2, 3.2, -31.6, -3.0))
 CALL <- merge(CALLOUT, data.frame(iso3 = cent$iso3, rounds = cent$rounds, px = st_coordinates(cent)[, 1], py = st_coordinates(cent)[, 2]), by = "iso3")
-# Comoros: islands too small to see at this scale, so ring the archipelago (bounding-box centre) and name it in the label
-kmb <- st_bbox(m[m$iso3 == "COM", ]); CALL[CALL$iso3 == "COM", c("px", "py")] <- c(mean(kmb[c("xmin", "xmax")]), mean(kmb[c("ymin", "ymax")]))
-CALL$txt <- ifelse(CALL$iso3 == "COM", paste0("Comoros: ", CALL$rounds), as.character(CALL$rounds)); RING <- CALL[CALL$iso3 == "COM", ]
-CALL$ex <- CALL$px; CALL$ey <- CALL$py; k <- CALL$iso3 == "COM"; v <- c(CALL$lx[k] - CALL$px[k], CALL$ly[k] - CALL$py[k]); CALL$ex[k] <- CALL$px[k] + 1.15 * v[1] / sqrt(sum(v^2)); CALL$ey[k] <- CALL$py[k] + 1.15 * v[2] / sqrt(sum(v^2))   # line stops at the ring
+# island states too small to see at this scale: ring the islands (bounding-box centre) and name the country in the label
+ISL <- c(COM = "Comoros", STP = "São Tomé and Príncipe")
+for (k in names(ISL)) { bb <- st_bbox(m[m$iso3 == k, ]); CALL[CALL$iso3 == k, c("px", "py")] <- c(mean(bb[c("xmin", "xmax")]), mean(bb[c("ymin", "ymax")])) }
+CALL$txt <- ifelse(CALL$iso3 %in% names(ISL), paste0(ISL[CALL$iso3], ": ", CALL$rounds), as.character(CALL$rounds)); RING <- CALL[CALL$iso3 %in% names(ISL), ]
+CALL$ex <- CALL$px; CALL$ey <- CALL$py; k <- CALL$iso3 %in% names(ISL); vx <- CALL$lx[k] - CALL$px[k]; vy <- CALL$ly[k] - CALL$py[k]; CALL$ex[k] <- CALL$px[k] + 1.15 * vx / sqrt(vx^2 + vy^2); CALL$ey[k] <- CALL$py[k] + 1.15 * vy / sqrt(vx^2 + vy^2)   # line stops at the ring
 pA <- ggplot(m) + geom_sf(aes(fill = pct), colour = "white", linewidth = 0.15) +
   geom_sf(data = vac, fill = NA, colour = "black", linewidth = 0.55) +
   geom_sf_text(data = cent[!cent$iso3 %in% CALLOUT$iso3, ], aes(label = rounds), size = 2.4, family = FONT) +
   geom_segment(data = CALL, aes(x = lx, y = ly, xend = ex, yend = ey), linewidth = 0.25, colour = "black") +
-  geom_point(data = CALL[CALL$iso3 != "COM", ], aes(px, py), size = 0.35) +
+  geom_point(data = CALL[!CALL$iso3 %in% names(ISL), ], aes(px, py), size = 0.35) +
   geom_point(data = RING, aes(px, py), shape = 21, size = 5.5, stroke = 0.45, fill = NA, colour = "black") +
   geom_label(data = CALL, aes(lx, ly, label = txt), size = 2.4, family = FONT, label.size = 0, label.padding = unit(0.08, "lines"), fill = "white") +
   scale_fill_gradient(low = "#EEF0F7", high = NAVY, na.value = "#E6E6E6", limits = c(15, 50), breaks = c(20, 30, 40, 50),
