@@ -172,6 +172,7 @@ flowchart TD
 | Perpetrator × type | [`41e_perpetrator_type.py`](build/41e_perpetrator_type.py), [`95_p42_cascade_by_type.R`](analysis/95_p42_cascade_by_type.R), [`96_p42_country_models.R`](analysis/96_p42_country_models.R), [`97_p42_pool.py`](pooling/97_p42_pool.py), [`61f_fig_cascade_by_type_lancet.R`](figures/61f_fig_cascade_by_type_lancet.R) | disclosure by perpetrator and type of violence (pre-registration 42) |
 | Uncertainty | [`84b_trend_predictive.py`](pooling/84b_trend_predictive.py), [`84c_cascade_pooled.py`](pooling/84c_cascade_pooled.py), [`61g_fig_country_trends.R`](figures/61g_fig_country_trends.R) | prediction bands, country trajectories, typical-country cascade |
 | Adjusted trends (post-hoc) | [`83b_trend_standardised.R`](analysis/83b_trend_standardised.R), [`84_trend_model_adjusted.py`](pooling/84_trend_model_adjusted.py), [`84_trend_model_crude_samesurveys.py`](pooling/84_trend_model_crude_samesurveys.py), [`61h_fig_trends_adjusted.R`](figures/61h_fig_trends_adjusted.R) | trend curves standardised for the women's characteristics, compared with unadjusted curves on the same surveys |
+| Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
 | Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
@@ -399,6 +400,7 @@ The documents will be released with the paper; the time stamps and hashes below 
 | 2026-11-04 13:36 | `4d53aae446359893` | CORRECTION 5 Correction 5 deviation 4: zero-event surveys in trend inputs (before re-run) |
 | 2026-11-04 13:43 | `49322780ea5e1083` | CORRECTION 5 Correction 5 note: published formal trend unaffected by deviation 4 |
 | 2026-11-04 14:12 | `9f92e7d41fd71423` | CORRECTION 5 post-hoc: covariate-standardised trend curves (before running) |
+| 2026-11-05 07:46 | `c61b12b6e8a82389` | CORRECTION 5 post-hoc: trends by age group (before running) |
 
 ## 8. Software
 
