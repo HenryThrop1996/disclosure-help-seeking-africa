@@ -1,4 +1,4 @@
-"""71_build_latex_manuscript.py - Lancet-style LaTeX manuscript (data, model, results; Figure 1, Table 1).
+"""71_build_latex_manuscript.py - LaTeX manuscript in journal house style (data, model, results; Figure 1, Table 1).
 Every number is read from result files. Writes main.tex into the Overleaf working copy given as argv[1], and numbers_used.json for independent checking.
 Hyperlinks: red boxes = internal links (figures, tables, sections, equations); green boxes = citations; blue = URLs.
 """
@@ -6,9 +6,9 @@ import json, sys, shutil, numpy as np, pandas as pd
 from pathlib import Path
 OL = Path(sys.argv[1]); R = __import__("pathlib").Path(__import__("os").environ["RR"]); T = R / "outputs/tables"; V3 = T / "P33_youth_v3"
 (OL / "figures").mkdir(exist_ok=True)
-shutil.copy(R / "outputs/figures/disclosure_v3/fig1_map_help_seeking_lancet.png", OL / "figures/fig1_map_help_seeking.png")   # 61b_fig1_lancet_style.R
-for _f in ["fig_trends_lancet.png", "fig_cascade_by_type_lancet.png", "fig_cascade_forest_lancet.png", "fig2_forest_injury_severe_lancet.png", "fig3_forest_both_former_lancet.png", "figS_prior_predictive.png", "figS_ppc.png", "figS_trend_checks.png", "figS_country_trends_sought_any.png", "figS_trends_adjusted.png", "figS_trends_by_age.png"]:   # cascade: 61d_fig_cascade_forest_lancet.R                                          # 61c_fig2_3_factor_forests_lancet.R
-    shutil.copy(R / "outputs/figures/disclosure_v3" / _f, OL / "figures" / _f.replace("_lancet", ""))   # journal not yet chosen: no journal name in Overleaf file names
+shutil.copy(R / "outputs/figures/disclosure_v3/fig1_map_help_seeking.png", OL / "figures/fig1_map_help_seeking.png")   # 61b_fig1_map_forest.R
+for _f in ["fig_trends.png", "fig_cascade_by_type.png", "fig_cascade_forest.png", "fig2_forest_injury_severe.png", "fig3_forest_both_former.png", "figS_prior_predictive.png", "figS_ppc.png", "figS_trend_checks.png", "figS_country_trends_sought_any.png", "figS_trends_adjusted.png", "figS_trends_by_age.png"]:   # figure scripts: 61b-61i
+    shutil.copy(R / "outputs/figures/disclosure_v3" / _f, OL / "figures" / _f)
 N = {}                                                                     # every number used, for the independent check
 def put(k, v): N[k] = v; return v
 f1 = lambda x: f"{x:.1f}"; f2 = lambda x: f"{x:.2f}"
@@ -176,8 +176,8 @@ cas = pd.read_csv(V3 / "A8_5_dhs_cascade_ci.csv").query("level == 'all'").set_in
 PO2 = {(r.model, r.term): {"countries": int(r.countries), "tau": float(r.tau)} for r in _po.itertuples()}
 md2 = lambda x: f"{x:.2f}"
 _in_appendix = [False]
-def lancet(tex):
-    """Lancet house style for the body text (between \\begin{document} and the bibliography):
+def house_style(tex):
+    """House style for the body text (between \\begin{document} and the bibliography):
     (1) mid-dot decimals (32.9 -> 32\\md{}9), never inside URLs, labels, references, citations, file names or lengths;
     (2) parentheses nested inside parentheses become square brackets, outside mathematics;
     (3) equations are cited as 'equation n', without the automatic parentheses of \\eqref."""
@@ -213,7 +213,7 @@ def lancet(tex):
     if depth != 0: raise ValueError(f"unbalanced parentheses in the text (depth {depth} at the end): check the last edited paragraph")
     if "\\section*{Supplementary appendix}" in tail and not _in_appendix[0]:
         k = tail.index("\\section*{Supplementary appendix}"); _in_appendix[0] = True
-        app = lancet("\\begin{document}" + tail[k:].replace("\\end{document}", "\\begin{thebibliography}\\end{document}", 1))
+        app = house_style("\\begin{document}" + tail[k:].replace("\\end{document}", "\\begin{thebibliography}\\end{document}", 1))
         tail = tail[:k] + app[len("\\begin{document}"):].replace("\\begin{thebibliography}\\end{document}", "\\end{document}", 1)
         _in_appendix[0] = False
     return head + "".join(out) + tail
@@ -757,7 +757,7 @@ DHS data are available from the DHS Program (\url{https://dhsprogram.com}) on re
 """ + APP.build(tableS1, n37d, n37v, SRC_TABLE, FOREST_FIGS, METHODS_DETAIL, TYPE_TABLES + EXTRA_APP) + r"""
 \end{document}
 """
-tex = lancet(tex)
+tex = house_style(tex)
 # keep only cited references in the paper; uncited ones go to references_for_later.tex (they return automatically once cited again)
 _ba, _bb = tex.index("\\begin{thebibliography}"), tex.index("\\end{thebibliography}")
 _cited = {k.strip() for grp in re.findall(r"\\cite\{([^}]*)\}", tex[:_ba] + tex[_bb:]) for k in grp.split(",")}

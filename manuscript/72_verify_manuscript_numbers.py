@@ -3,7 +3,7 @@ import numpy as np, sys, re, numpy as np, pandas as pd, fitz
 from pathlib import Path
 R=__import__("pathlib").Path(__import__("os").environ["RR"]); V3=R/"outputs/tables/P33_youth_v3"
 txt=" ".join(re.sub(r"(?m)^\s*\d{1,4}\s*$", "", p.get_text()) for p in fitz.open(sys.argv[1]));  # drop margin line numbers (lineno)
-txt=re.sub(r"\s+"," ",txt).replace("–","-").replace("−","-").replace("·",".").replace("[","(").replace("]",")")  # Lancet mid-dots and nested brackets
+txt=re.sub(r"\s+"," ",txt).replace("–","-").replace("−","-").replace("·",".").replace("[","(").replace("]",")")  # mid-dot decimals and nested brackets
 checks=[]
 def chk(label, s): checks.append((label, s, s in txt))
 c=pd.read_csv(V3/"A8_5_dhs_cascade_ci.csv")

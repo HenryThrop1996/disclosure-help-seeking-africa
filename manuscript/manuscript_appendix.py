@@ -1,6 +1,6 @@
 """manuscript_appendix.py - builds the full supplementary appendix (LaTeX) for 71_build_latex_manuscript.py.
 Every number is read from the result files of the pre-registered analyses (Pre-registrations 33, 37 and 38).
-Decimal points are written as ordinary dots; the manuscript's lancet() post-processor converts them to mid-dots.
+Decimal points are written as ordinary dots; the manuscript's house_style() post-processor converts them to mid-dots.
 """
 import re, numpy as np, pandas as pd
 from pathlib import Path

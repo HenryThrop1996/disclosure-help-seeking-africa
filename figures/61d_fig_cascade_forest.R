@@ -1,5 +1,5 @@
-# 61d_fig_cascade_forest_lancet.R - Disclosure cascade by country (told anyone, sought any help, sought formal help), three forests
-# sharing one country column, in the style of Figure 1C and Li et al. Lancet Glob Health 2026; 14: 103889.
+# 61d_fig_cascade_forest.R - Disclosure cascade by country (told anyone, sought any help, sought formal help), three forests
+# sharing one country column, in the style of Figure 1C.
 # Input: A8_5_dhs_cascade_ci.csv (59_A8_cascade_ci.R): survey-weighted percentages with design-based logit 95% CIs (equation 1);
 # regional and overall rows pool women within region with survey weights. Each step has its own denominator: telling anyone is
 # missing where a survey's question did not distinguish it from seeking help, and formal help where the source items were absent.
@@ -67,6 +67,6 @@ g <- ggplot() +
   scale_size_area(max_size = 3.6, guide = "none") +
   coord_cartesian(xlim = c(0, 104), ylim = c(ybot - 2.6, top + 1.9), expand = FALSE, clip = "off") +
   theme_void(base_family = FONT) + theme(plot.margin = margin(4, 6, 4, 4))
-ragg::agg_png(file.path(FG, "fig_cascade_forest_lancet.png"), width = 8.9, height = 0.19 * (top + 1.9 - ybot + 2.6) + 0.3, units = "in", res = 300, background = "white")
+ragg::agg_png(file.path(FG, "fig_cascade_forest.png"), width = 8.9, height = 0.19 * (top + 1.9 - ybot + 2.6) + 0.3, units = "in", res = 300, background = "white")
 print(g); invisible(dev.off())
 cat("cascade forest written:", paste(OUT, ALL$etxt, collapse = " | "), "\n")

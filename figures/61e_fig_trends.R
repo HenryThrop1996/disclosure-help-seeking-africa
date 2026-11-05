@@ -1,4 +1,4 @@
-# 61e_fig_trends_lancet.R - Figure 3: trends in disclosure and help-seeking among young women, 2004-2025 (Pre-registration 39).
+# 61e_fig_trends.R - Figure 3: trends in disclosure and help-seeking among young women, 2004-2025 (Pre-registration 39).
 # Rows: told anyone, sought any help, sought formal help. Columns: all countries and UN regions.
 # Points: survey-weighted survey estimates (size = women); thin lines join a country's rounds.
 # Curves and dark bands: posterior median and 95% CrI of the mean curve (84_trend_model.py).
@@ -46,5 +46,5 @@ g <- ggplot() +
   theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), strip.placement = "outside",
         strip.text = element_text(face = "bold", size = 9), axis.text = element_text(size = 7.5), panel.spacing = unit(0.5, "lines"),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 6.5), axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3))
-ragg::agg_png(file.path(FG, "fig_trends_lancet.png"), width = 7.2, height = 7.8, units = "in", res = 300, background = "white"); print(g); invisible(dev.off())
-cat("fig_trends_lancet.png written; max prediction band", PB[, max(pred_hi)], "\n")
+ragg::agg_png(file.path(FG, "fig_trends.png"), width = 7.2, height = 7.8, units = "in", res = 300, background = "white"); print(g); invisible(dev.off())
+cat("fig_trends.png written; max prediction band", PB[, max(pred_hi)], "\n")

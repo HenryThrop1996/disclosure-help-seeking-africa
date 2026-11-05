@@ -1,8 +1,7 @@
-# 61b_fig1_lancet_style.R - Figure 1 restyled to Lancet Global Health house style, following the forest plots in
-# Li et al. Lancet Glob Health 2026; 14: 103889 (appendix figures 4, 6, 7): Times font; country column on the left;
+# 61b_fig1_map_forest.R - Figure 1 in journal house style, following published multi-country forest plots: Times font; country column on the left;
 # estimate (95% CI) and weight columns on the right; grey squares sized by weight with a black point marker;
 # black CI lines; maroon dashed line at the overall estimate; hollow navy diamonds for subtotals and the overall estimate.
-# Decimals use the Lancet mid-dot. No caption inside the figure (the LaTeX caption carries it).
+# Decimals use the mid-dot. No caption inside the figure (the LaTeX caption carries it).
 # Same inputs and numbers as 61_fig1_map_forest_v3.R; only the presentation changes.
 suppressMessages({library(data.table); library(ggplot2); library(sf); library(patchwork)})
 sf_use_s2(FALSE)
@@ -16,7 +15,7 @@ NAMES <- c(AO = "Angola", BF = "Burkina Faso", BJ = "Benin", BU = "Burundi", CD 
            GM = "Gambia", GN = "Guinea", KE = "Kenya", KM = "Comoros", LB = "Liberia", LS = "Lesotho", MD = "Madagascar", ML = "Mali", MR = "Mauritania", MW = "Malawi", MZ = "Mozambique",
            NG = "Nigeria", NM = "Namibia", RW = "Rwanda", SL = "Sierra Leone", SN = "Senegal", TD = "Chad", TG = "Togo", TZ = "Tanzania", UG = "Uganda", ZA = "South Africa", ZM = "Zambia",
            ZW = "Zimbabwe", SZ = "Eswatini", ST = "São Tomé and Príncipe")
-md <- function(x, d = 1) gsub(".", "·", formatC(x, format = "f", digits = d), fixed = TRUE)   # Lancet mid-dot decimals
+md <- function(x, d = 1) gsub(".", "·", formatC(x, format = "f", digits = d), fixed = TRUE)   # mid-dot decimals
 est <- function(p, l, h) sprintf("%s (%s–%s)", md(p), md(l), md(h))
 CI <- fread(file.path(TB, "A8_5_dhs_cascade_ci.csv"))
 cty <- CI[level == "country" & outcome == "sought_any"]; reg <- CI[level == "region" & outcome == "sought_any"]; al <- CI[level == "all" & outcome == "sought_any"]
@@ -96,7 +95,7 @@ pC <- ggplot() +
         axis.ticks.length.x = unit(2.5, "pt"), axis.title.x = element_text(size = 9.5, margin = margin(t = 5)),
         plot.tag = element_text(face = "bold", size = 13), plot.margin = margin(4, 8, 4, 4))
 fig <- ((pA | pB) + plot_layout(widths = c(2.1, 1))) / pC + plot_layout(heights = c(1, 2.35))
-ragg::agg_png(file.path(FG, "fig1_map_help_seeking_lancet.png"), width = 8, height = 10.6, units = "in", res = 300, background = "white")
+ragg::agg_png(file.path(FG, "fig1_map_help_seeking.png"), width = 8, height = 10.6, units = "in", res = 300, background = "white")
 print(fig); invisible(dev.off())
 fwrite(F, file.path(TB, "fig1_forest_rows.csv"))
-cat("fig1 (Lancet style) written; women =", NT, "; overall =", est(al$pct, al$lo, al$hi), "\n")
+cat("fig1 written; women =", NT, "; overall =", est(al$pct, al$lo, al$hi), "\n")

@@ -1,5 +1,5 @@
-# 61f_fig_cascade_by_type_lancet.R - Pre-registration 42: disclosure cascade by perpetrator and type of violence (told anyone, sought any help,
-# sought formal help), three forests sharing one label column, in the style of 61d / Li et al. Lancet Glob Health 2026.
+# 61f_fig_cascade_by_type.R - Pre-registration 42: disclosure cascade by perpetrator and type of violence (told anyone, sought any help,
+# sought formal help), three forests sharing one label column, in the style of 61d.
 # Input: outputs/tables/P42/P42_cascade_by_type.csv (95_p42_cascade_by_type.R; survey-weighted %, logit 95% CI, PSU clustering).
 suppressMessages({library(data.table); library(ggplot2)})
 ROOT <- Sys.getenv("RR"); FG <- file.path(ROOT, "outputs/figures/disclosure_v3")
@@ -47,5 +47,5 @@ g <- ggplot() +
   scale_size_area(max_size = 3.6, guide = "none") +
   coord_cartesian(xlim = c(0, 100), ylim = c(ybot - 2.0, top + 1.9), expand = FALSE, clip = "off") +
   theme_void(base_family = FONT) + theme(plot.margin = margin(4, 6, 4, 4))
-ragg::agg_png(file.path(FG, "fig_cascade_by_type_lancet.png"), width = 9.2, height = 0.24 * (top + 1.9 - ybot + 2.0) + 0.3, units = "in", res = 300, background = "white")
-print(g); invisible(dev.off()); cat("written fig_cascade_by_type_lancet.png\n")
+ragg::agg_png(file.path(FG, "fig_cascade_by_type.png"), width = 9.2, height = 0.24 * (top + 1.9 - ybot + 2.0) + 0.3, units = "in", res = 300, background = "white")
+print(g); invisible(dev.off()); cat("written fig_cascade_by_type.png\n")

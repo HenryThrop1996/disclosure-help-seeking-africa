@@ -1,5 +1,5 @@
-# 61c_fig2_3_factor_forests_lancet.R - Figures 2 and 3: country-level forest plots of the four main factors associated with
-# seeking any help, in the style of Li et al. Lancet Glob Health 2026; 14: 103889 (appendix figures 4, 6, 7).
+# 61c_fig_factor_forests.R - Figures 2 and 3: country-level forest plots of the four main factors associated with
+# seeking any help, in the style of published multi-country forest plots.
 #   Figure 2: injury and severe physical violence (partner-violence model, women with partner violence, 21 countries)
 #   Figure 3: physical and sexual violence and formerly in union (main model, 26 countries)
 # Rows: each country's survey-weighted logit OR with PSU-clustered 95% CI (A2, equations 2-4); regional subtotals and the overall
@@ -82,5 +82,5 @@ make <- function(mdl, terms, titles, file) {
   ragg::agg_png(file, width = 8, height = 0.205 * (top + 1.9 - ybot + 3.6) + 0.3, units = "in", res = 300, background = "white"); print(g); invisible(dev.off())
   cat(basename(file), ": countries", nrow(cc), "| tau", paste(round(R$tau, 3), collapse = ", "), "\n")
   invisible(V) }
-make("partner", c("injury", "severe"), c("A  Injury from partner violence", "B  Severe physical violence"), file.path(FG, "fig2_forest_injury_severe_lancet.png"))
-make("main", c("vtypeboth", "maritalformer"), c("A  Physical and sexual violence", "B  Formerly in union"), file.path(FG, "fig3_forest_both_former_lancet.png"))
+make("partner", c("injury", "severe"), c("A  Injury from partner violence", "B  Severe physical violence"), file.path(FG, "fig2_forest_injury_severe.png"))
+make("main", c("vtypeboth", "maritalformer"), c("A  Physical and sexual violence", "B  Formerly in union"), file.path(FG, "fig3_forest_both_former.png"))

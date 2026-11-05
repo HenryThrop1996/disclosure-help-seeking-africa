@@ -61,10 +61,10 @@ flowchart TD
     H2["78_review_country_models.R<br/>sensitivity: country models"]
     H3["79_review_pool.py<br/>sensitivity: pooling"]
     H4["80_population_weights.R<br/>population weighting"]
-    I1["61b_fig1_lancet_style.R<br/>Figure 1"]
-    I2["61d_fig_cascade_forest_lancet.R<br/>Figure 2"]
-    I3["61e_fig_trends_lancet.R<br/>Figure 3"]
-    I4["61c_fig2_3_factor_forests_lancet.R<br/>appendix forest plots"]
+    I1["61b_fig1_map_forest.R<br/>Figure 1"]
+    I2["61d_fig_cascade_forest.R<br/>Figure 2"]
+    I3["61e_fig_trends.R<br/>Figure 3"]
+    I4["61c_fig_factor_forests.R<br/>appendix forest plots"]
     J1["71_build_latex_manuscript.py<br/>manuscript"]
     J2["manuscript_appendix.py<br/>appendix tables"]
     K1["72_verify_manuscript_numbers.py<br/>independent number check"]
@@ -127,10 +127,10 @@ flowchart TD
     click H2 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/review/78_review_country_models.R" "Open 78_review_country_models.R" _blank
     click H3 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/review/79_review_pool.py" "Open 79_review_pool.py" _blank
     click H4 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/review/80_population_weights.R" "Open 80_population_weights.R" _blank
-    click I1 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61b_fig1_lancet_style.R" "Open 61b_fig1_lancet_style.R" _blank
-    click I2 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61d_fig_cascade_forest_lancet.R" "Open 61d_fig_cascade_forest_lancet.R" _blank
-    click I3 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61e_fig_trends_lancet.R" "Open 61e_fig_trends_lancet.R" _blank
-    click I4 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61c_fig2_3_factor_forests_lancet.R" "Open 61c_fig2_3_factor_forests_lancet.R" _blank
+    click I1 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61b_fig1_map_forest.R" "Open 61b_fig1_map_forest.R" _blank
+    click I2 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61d_fig_cascade_forest.R" "Open 61d_fig_cascade_forest.R" _blank
+    click I3 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61e_fig_trends.R" "Open 61e_fig_trends.R" _blank
+    click I4 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/figures/61c_fig_factor_forests.R" "Open 61c_fig_factor_forests.R" _blank
     click J1 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/manuscript/71_build_latex_manuscript.py" "Open 71_build_latex_manuscript.py" _blank
     click J2 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/manuscript/manuscript_appendix.py" "Open manuscript_appendix.py" _blank
     click K1 href "https://github.com/teklesam/disclosure-help-seeking-africa/blob/main/manuscript/72_verify_manuscript_numbers.py" "Open 72_verify_manuscript_numbers.py" _blank
@@ -161,15 +161,15 @@ flowchart TD
 | 10 Sensitivity | [`78_review_country_models.R`](review/78_review_country_models.R) | sensitivity: country models |
 | 10 Sensitivity | [`79_review_pool.py`](review/79_review_pool.py) | sensitivity: pooling |
 | 10 Sensitivity | [`80_population_weights.R`](review/80_population_weights.R) | population weighting |
-| 11 Figures | [`61b_fig1_lancet_style.R`](figures/61b_fig1_lancet_style.R) | Figure 1 |
-| 11 Figures | [`61d_fig_cascade_forest_lancet.R`](figures/61d_fig_cascade_forest_lancet.R) | Figure 2 |
-| 11 Figures | [`61e_fig_trends_lancet.R`](figures/61e_fig_trends_lancet.R) | Figure 3 |
-| 11 Figures | [`61c_fig2_3_factor_forests_lancet.R`](figures/61c_fig2_3_factor_forests_lancet.R) | appendix forest plots |
+| 11 Figures | [`61b_fig1_map_forest.R`](figures/61b_fig1_map_forest.R) | Figure 1 |
+| 11 Figures | [`61d_fig_cascade_forest.R`](figures/61d_fig_cascade_forest.R) | Figure 2 |
+| 11 Figures | [`61e_fig_trends.R`](figures/61e_fig_trends.R) | Figure 3 |
+| 11 Figures | [`61c_fig_factor_forests.R`](figures/61c_fig_factor_forests.R) | appendix forest plots |
 | 12 Manuscript | [`71_build_latex_manuscript.py`](manuscript/71_build_latex_manuscript.py) | manuscript |
 | 12 Manuscript | [`manuscript_appendix.py`](manuscript/manuscript_appendix.py) | appendix tables |
 | 13 Verify | [`72_verify_manuscript_numbers.py`](manuscript/72_verify_manuscript_numbers.py) | independent number check |
 | Correction 5 | [`firth_helper.R`](analysis/firth_helper.R) | Firth refit of separated country models (sourced by every stage 1 script) |
-| Perpetrator × type | [`41e_perpetrator_type.py`](build/41e_perpetrator_type.py), [`95_p42_cascade_by_type.R`](analysis/95_p42_cascade_by_type.R), [`96_p42_country_models.R`](analysis/96_p42_country_models.R), [`97_p42_pool.py`](pooling/97_p42_pool.py), [`61f_fig_cascade_by_type_lancet.R`](figures/61f_fig_cascade_by_type_lancet.R) | disclosure by perpetrator and type of violence (pre-registration 42) |
+| Perpetrator × type | [`41e_perpetrator_type.py`](build/41e_perpetrator_type.py), [`95_p42_cascade_by_type.R`](analysis/95_p42_cascade_by_type.R), [`96_p42_country_models.R`](analysis/96_p42_country_models.R), [`97_p42_pool.py`](pooling/97_p42_pool.py), [`61f_fig_cascade_by_type.R`](figures/61f_fig_cascade_by_type.R) | disclosure by perpetrator and type of violence (pre-registration 42) |
 | Uncertainty | [`84b_trend_predictive.py`](pooling/84b_trend_predictive.py), [`84c_cascade_pooled.py`](pooling/84c_cascade_pooled.py), [`61g_fig_country_trends.R`](figures/61g_fig_country_trends.R) | prediction bands, country trajectories, typical-country cascade |
 | Adjusted trends (post-hoc) | [`83b_trend_standardised.R`](analysis/83b_trend_standardised.R), [`84_trend_model_adjusted.py`](pooling/84_trend_model_adjusted.py), [`84_trend_model_crude_samesurveys.py`](pooling/84_trend_model_crude_samesurveys.py), [`61h_fig_trends_adjusted.R`](figures/61h_fig_trends_adjusted.R) | trend curves standardised for the women's characteristics, compared with unadjusted curves on the same surveys |
 | Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
@@ -267,7 +267,7 @@ Help came mostly from family (80%), friends or neighbours (19%) and the partner'
 4.9% went to the police and 1.7% to a health worker (percentages of those who sought help).
 In VACS, after sexual violence, 50.4% of girls and 33.9% of boys told someone, and 10.8% and 5.7% sought help.
 
-<p align="center"><img src="docs/figures/fig_cascade_forest_lancet.png" width="760" alt="Disclosure cascade by country"></p>
+<p align="center"><img src="docs/figures/fig_cascade_forest.png" width="760" alt="Disclosure cascade by country"></p>
 
 ### 5.2 Factors associated with seeking any help
 
@@ -289,7 +289,7 @@ Odds ratios (95% credible intervals) from the two-stage model; the last column i
 Injury, severe violence and both types of violence **replicated in two independent random halves of countries**; wealth, education and urban residence were null
 in crude, fully adjusted and reduced socio-demographic models.
 
-<p align="center"><img src="docs/figures/fig2_forest_injury_severe_lancet.png" width="760" alt="Injury and severe violence by country"></p>
+<p align="center"><img src="docs/figures/fig2_forest_injury_severe.png" width="760" alt="Injury and severe violence by country"></p>
 
 ### 5.3 Robustness of the four main factors
 
@@ -324,12 +324,12 @@ $$y_{cs}\sim\mathcal N(a_c+b_c t_{cs},\ se_{cs}^2+\sigma_e^2),\quad b_c=B_{r(c)}
 | Sought any help | 0.72 (0.55–0.91) | 0.99 | -14.4 pp (-26.0 to -4.2) | 0.73 (0.65–0.82), p<0.001 | 0.71 (0.58–0.86) | 0.72 (0.57–0.92) | 0.74 (0.63–0.88) |
 | Sought formal help | 1.27 (0.76–1.94) | 0.15 | 1.0 pp (-1.4 to 4.2) | 1.33 (1.04–1.71), p=0.02 | 1.17 (0.65–1.76) | 1.29 (0.76–2.09) | 1.43 (1.03–2.00) |
 
-Code: [`analysis/83_trend_survey_estimates.R`](analysis/83_trend_survey_estimates.R), [`pooling/84_trend_model.py`](pooling/84_trend_model.py), [`analysis/85_trend_metafor.R`](analysis/85_trend_metafor.R), figure [`figures/61e_fig_trends_lancet.R`](figures/61e_fig_trends_lancet.R).
+Code: [`analysis/83_trend_survey_estimates.R`](analysis/83_trend_survey_estimates.R), [`pooling/84_trend_model.py`](pooling/84_trend_model.py), [`analysis/85_trend_metafor.R`](analysis/85_trend_metafor.R), figure [`figures/61e_fig_trends.R`](figures/61e_fig_trends.R).
 
 Within countries, the trend adjusted for the women's characteristics was similar but less certain (0.73 (0.54–1.01); 0.68 (0.51–0.99) in DHS phase 6 or later). The fall was not linear (post-hoc): in countries with repeated surveys the odds changed little before 2016 and fell from 2013 onwards, possibly with DHS questionnaire phases 7 and 8. Formal help, the registered primary outcome, did not fall.
 Southern Africa has no repeated surveys, so its trend is not estimated.
 
-<p align="center"><img src="docs/figures/fig_trends_lancet.png" width="760" alt="Trends in disclosure and help-seeking 2004-2025"></p>
+<p align="center"><img src="docs/figures/fig_trends.png" width="760" alt="Trends in disclosure and help-seeking 2004-2025"></p>
 
 ### 5.6 Model checking
 
