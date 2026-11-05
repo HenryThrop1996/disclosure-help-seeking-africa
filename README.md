@@ -173,6 +173,7 @@ flowchart TD
 | Uncertainty | [`84b_trend_predictive.py`](pooling/84b_trend_predictive.py), [`84c_cascade_pooled.py`](pooling/84c_cascade_pooled.py), [`61g_fig_country_trends.R`](figures/61g_fig_country_trends.R) | prediction bands, country trajectories, typical-country cascade |
 | Adjusted trends (post-hoc) | [`83b_trend_standardised.R`](analysis/83b_trend_standardised.R), [`84_trend_model_adjusted.py`](pooling/84_trend_model_adjusted.py), [`84_trend_model_crude_samesurveys.py`](pooling/84_trend_model_crude_samesurveys.py), [`61h_fig_trends_adjusted.R`](figures/61h_fig_trends_adjusted.R) | trend curves standardised for the women's characteristics, compared with unadjusted curves on the same surveys |
 | Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
+| Spline trends (post-hoc) | [`84e_trend_splines.R`](analysis/84e_trend_splines.R), [`61j_fig_trend_splines.R`](figures/61j_fig_trend_splines.R) | natural cubic splines (2–4 df) and a penalised smooth in place of the linear trend; LOO and likelihood-ratio comparison |
 | Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
@@ -401,6 +402,7 @@ The documents will be released with the paper; the time stamps and hashes below 
 | 2026-11-04 13:43 | `49322780ea5e1083` | CORRECTION 5 Correction 5 note: published formal trend unaffected by deviation 4 |
 | 2026-11-04 14:12 | `9f92e7d41fd71423` | CORRECTION 5 post-hoc: covariate-standardised trend curves (before running) |
 | 2026-11-05 07:46 | `c61b12b6e8a82389` | CORRECTION 5 post-hoc: trends by age group (before running) |
+| 2026-11-05 12:42 | `ca455b483f92a1c6` | CORRECTION 5 post-hoc: spline trend sensitivity (before running) |
 
 ## 8. Software
 
