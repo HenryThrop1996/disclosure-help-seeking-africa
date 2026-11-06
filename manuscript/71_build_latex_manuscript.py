@@ -602,7 +602,7 @@ tex = r"""\documentclass[11pt,a4paper]{article}
 \noindent\textbf{Implications of all the available evidence} Services reach a small and severe part of the violence that young people experience, and informal help-seeking is falling. Help-seeking should be monitored alongside violence prevalence for the Sustainable Development Goals (about """ + f"{sdg('victim_12m').pct:.0f}" + r"""\% of young women with recent violence reported it to the police or legal services, a proxy for indicator 16.3.1, with no clear change since 2004), and programmes should create earlier, low-threshold routes to help, including for boys, rather than assume that help-seeking will rise with education or wealth.
 
 \section{Introduction}\label{sec:intro}
-\noindent\todo{Introduction to be written (literature led by DM); the outline with recommended references is in the archive folder of this Overleaf project.}
+\noindent\todo{Introduction to be written (literature led by DM)}
 
 Most young survivors of violence in sub-Saharan Africa never reach help,\cite{palermo2014,pereira2020} yet whether help-seeking is changing, and whether the factors associated with it are shared across regions, is unknown. We asked how many young survivors tell someone, seek help and reach formal services; whether this changed between 2004 and 2025; and which factors are associated with help-seeking across African regions.
 
@@ -767,7 +767,7 @@ We declare no competing interests.
 DHS data are available from the DHS Program (\url{https://dhsprogram.com}) on registration; VACS public-use data from Together for Girls and the US Centers for Disease Control and Prevention. Data cannot be shared by the authors under these licences. Analysis code is available at \url{https://github.com/teklesam/disclosure-help-seeking-africa}.
 
 \section*{Use of artificial intelligence tools}
-The authors conceived and designed the study, pre-registered the analyses and made all analytical decisions. Claude Code (Anthropic), an AI coding assistant, was used mainly to write, debug and check the analysis code; it also helped produce the figure code, assemble the manuscript from the result files and draft and edit text. Every analysis was time-stamped before it was run (or labelled post-hoc), numbers in the text are read directly from the result files, and key numbers are recomputed by an independent script. The authors reviewed all code, outputs and text and take full responsibility for the content. \todo{Confirm wording and model versions before submission.}
+The authors conceived and designed the study, pre-registered the analyses and made all analytical decisions. Claude Code (Anthropic), an AI coding assistant, was used mainly to debug and check the analysis code; it also helped produce the figure code, and edit text. Every analysis was time-stamped before it was run (or labelled post-hoc), numbers in the text are read directly from the result files, and key numbers are recomputed by an independent script. The authors reviewed all code, outputs and text and take full responsibility for the content. \todo{Confirm wording and model versions before submission.}
 
 \begin{thebibliography}{99}\setlength{\itemsep}{0pt}\small
 \bibitem{who2016} World Health Organization. INSPIRE: seven strategies for ending violence against children. Geneva: World Health Organization, 2016.
