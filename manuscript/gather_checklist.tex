@@ -1,0 +1,50 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{booktabs,longtable,array,xcolor}
+\newcommand{\todo}[1]{\textcolor{red}{[#1]}}
+\renewcommand{\arraystretch}{1.15}
+\begin{document}
+\begin{center}
+{\large\textbf{GATHER checklist (Guidelines for Accurate and Transparent Health Estimates Reporting)}}\\[0.3em]
+Help-seeking after violence among adolescents and young people in sub-Saharan Africa (DHS and VACS)
+\end{center}
+\footnotesize
+\begin{longtable}{>{\centering\arraybackslash}p{0.6cm}>{\raggedright\arraybackslash}p{7.6cm}>{\raggedright\arraybackslash}p{8.2cm}}
+\toprule
+Item & Checklist item & Where reported \\
+\midrule
+\endhead
+\multicolumn{3}{l}{\textit{Objectives and funding}} \\
+1 & Define the indicators, populations (age, sex, geography) and time periods for which estimates were made & Methods, Data and Outcomes (told anyone, sought any help, sought formal help; SDG 16.3.1 proxy); women aged 15--24 years with physical or sexual violence; 33 sub-Saharan countries; 2004--2025 \\
+2 & List the funding sources for the work & Funding statement \todo{to be added} \\
+\midrule
+\multicolumn{3}{l}{\textit{Data inputs synthesised in the study}} \\
+3 & Describe how the data were identified and accessed & Methods, Data (all DHS rounds in sub-Saharan Africa with the domestic violence module and help-seeking questions, obtained from the DHS Program on registration); Data sharing \\
+4 & Specify inclusion and exclusion criteria; identify ad-hoc exclusions & Methods, Data; pre-registration 33 and Correction 5 (seven surveys added; two surveys in which no one was asked about help-seeking, and one single-record file, excluded) \\
+5 & Provide information on all included data sources and their main characteristics & Data coverage table (Methods, Data); appendix table of surveys, roles and sample sizes \\
+6 & Identify categories of input data with potentially important biases & Discussion, limitations (self-report; help-seeking asked for lifetime violence; questionnaire changes in DHS phases 7 and 8; telling anyone asked only in some surveys) \\
+\midrule
+\multicolumn{3}{l}{\textit{Data inputs not synthesised in the study}} \\
+7 & Describe and give sources for any other data inputs & WorldPop R2025A (population weights); UN World Population Prospects 2024 (population coverage); Natural Earth (basemap) \\
+\midrule
+\multicolumn{3}{l}{\textit{All data inputs}} \\
+8 & Provide all data inputs in an extractable format, or a contact for data that cannot be shared & Microdata: DHS Program and VACS data owners (third-party ownership; Data sharing). Survey-level estimates: appendix tables \todo{release survey-level estimates as a CSV file with the code} \\
+\midrule
+\multicolumn{3}{l}{\textit{Data analysis}} \\
+9 & Provide a conceptual overview of the analysis & Methods, Statistical analysis (two-stage analysis: survey-weighted country models, then Bayesian hierarchical pooling of countries within regions; hierarchical meta-regression for trends) \\
+10 & Describe all steps of the analysis, including formulae & Methods (equations) and appendix (data processing, outcome coding audit, weighting, models, priors) \\
+11 & Describe how candidate models were evaluated and the final models selected & Methods, Model checking; Results, Model checking; appendix (DIC, WAIC, PSIS-LOO; posterior predictive checks) \\
+12 & Provide results of model evaluation and sensitivity analyses & Results, Model checking; appendix tables of robustness and sensitivity analyses, trend checks and prior sensitivity \\
+13 & Describe how uncertainty was calculated; state which sources were and were not accounted for & Methods: survey-design CIs (logit method, PSU clustering), posterior credible intervals and prediction intervals for a new country or survey. Not accounted for: misreporting of violence or help-seeking, questionnaire change, uncertainty in population estimates \\
+14 & State how the analytical code can be accessed & Methods and Data sharing (\texttt{https://github.com/teklesam/disclosure-help-seeking-africa}) \\
+\midrule
+\multicolumn{3}{l}{\textit{Results and discussion}} \\
+15 & Provide published estimates in an extractable format & Appendix tables \todo{release country, regional and trend estimates as CSV files with the code} \\
+16 & Report a quantitative measure of uncertainty & 95\% CIs, 95\% credible intervals, 95\% prediction intervals and posterior probabilities throughout \\
+17 & Interpret results in light of existing evidence & Discussion; Research in context \\
+18 & Discuss limitations, including modelling assumptions and data limitations & Discussion, limitations paragraph \\
+\bottomrule
+\end{longtable}
+\end{document}

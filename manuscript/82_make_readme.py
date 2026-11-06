@@ -23,6 +23,8 @@ pool = lambda m, t, o="sought_any": A3[(A3.source == "DHS") & (A3.model == m) & 
 p38 = lambda a, m, t: T38[(T38.analysis == a) & (T38.model == m) & (T38.term == t)].iloc[0]
 cas = lambda o, lvl="all", reg=None: C[(C.outcome == o) & (C.level == lvl) & ((C.region == reg) if reg else True)].iloc[0]
 pw = lambda o, reg="All": PW[(PW.outcome == o) & (PW.weighting == "population") & (PW.region == reg)].iloc[0]
+P87 = pd.read_csv(P38 / "P87_sdg1631_pooled.csv"); P87s = pd.read_csv(P38 / "P87_sdg1631_slopes.csv"); COV = pd.read_csv(P38 / "P88_coverage_table.csv").set_index("group")
+sdg = P87[(P87.population == "victim_12m") & (P87.weighting == "population") & (P87.region == "All")].iloc[0]; sdgt = P87s[(P87s.population == "victim_12m") & (P87s.scope == "All")].iloc[0]
 vac = lambda st, sex: VC[(VC.level == "all VACS countries") & (VC.type == "SV") & (VC.sex == sex) & (VC.step == st)].iloc[0]
 hs = lambda k: HS[(HS.source == k) & (HS.region == "All")].pct.iloc[0]
 
@@ -229,6 +231,7 @@ flowchart TD
 | Adjusted trends (post-hoc) | [`83b_trend_standardised.R`](analysis/83b_trend_standardised.R), [`84_trend_model_adjusted.py`](pooling/84_trend_model_adjusted.py), [`84_trend_model_crude_samesurveys.py`](pooling/84_trend_model_crude_samesurveys.py), [`61h_fig_trends_adjusted.R`](figures/61h_fig_trends_adjusted.R) | trend curves standardised for the women's characteristics, compared with unadjusted curves on the same surveys |
 | Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
 | Spline trends (post-hoc) | [`84e_trend_splines.R`](analysis/84e_trend_splines.R), [`61j_fig_trend_splines.R`](figures/61j_fig_trend_splines.R) | natural cubic splines (2–4 df) and a penalised smooth in place of the linear trend; LOO and likelihood-ratio comparison |
+| Reporting changes (post-hoc) | [`87_sdg1631_proxy.R`](review/87_sdg1631_proxy.R), [`87b_sdg1631_trend.py`](pooling/87b_sdg1631_trend.py), [`88_coverage_table.R`](review/88_coverage_table.R), [`61k_fig_trends_regional.R`](figures/61k_fig_trends_regional.R) | proxy for SDG indicator 16.3.1 (police or legal help among young women with violence in the past 12 months) and its trend; data coverage (UN WPP 2024); country trajectories by region |
 | Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
@@ -321,6 +324,8 @@ Code: [`harmonised/73_p37_country_models.R`](harmonised/73_p37_country_models.R)
 
 Help came mostly from family ({hs('src_family'):.0f}%), friends or neighbours ({hs('src_friends_neighbours'):.0f}%) and the partner's family ({hs('src_partner_family'):.0f}%);
 {hs('src_police'):.1f}% went to the police and {hs('src_health'):.1f}% to a health worker (percentages of those who sought help).
+Reporting to the police or legal services, a proxy for SDG indicator 16.3.1 (post-hoc), was {pc(sdg)} among young women with violence in the past 12 months (population-weighted), with no clear trend (OR per decade {ci(sdgt.OR_decade, sdgt.OR_lo, sdgt.OR_hi)}; Pr(decline) {f2(sdgt.P_decline)}).
+The {int(COV.loc['Sub-Saharan Africa', 'countries_with_data'])} countries with data are home to {f1(COV.loc['Sub-Saharan Africa', 'pop_coverage_pct'])}% of sub-Saharan women aged 15–24 years (UN World Population Prospects 2024).
 In VACS, after sexual violence, {f1(vac('tell', 'girls').pct)}% of girls and {f1(vac('tell', 'boys').pct)}% of boys told someone, and {f1(vac('sought', 'girls').pct)}% and {f1(vac('sought', 'boys').pct)}% sought help.
 
 <p align="center"><img src="docs/figures/fig_cascade_forest.png" width="760" alt="Disclosure cascade by country"></p>

@@ -51,6 +51,12 @@ w42=w42.merge(ty,on=["survey","caseid"]); ps=w42[(w42.PS==1)&(w42.PP==0)&(w42.NP
 chk("P42 partner sexual only sought (recomputed)", f"{100*np.average(ps.sought_any,weights=ps.d005):.1f}% (")
 o42=pd.read_csv(R/"outputs/tables/P42/P42_pooled.csv"); r=o42[(o42.analysis=="B_types")&(o42.term=="NS_minus_PS")&(o42.outcome=="sought_any")].iloc[0]
 chk("P42 NS vs PS ratio", f"{r.OR:.2f} (95% CrI {r.OR_lo:.2f}-{r.OR_hi:.2f})")
+# Correction 5 post-hoc addition 4: SDG 16.3.1 proxy, population-weighted cascade and coverage, read from the result files
+s87=pd.read_csv(Q/"P87_sdg1631_pooled.csv"); r=s87[(s87.population=="victim_12m")&(s87.weighting=="population")&(s87.region=="All")].iloc[0]
+chk("SDG proxy population-weighted", f"{r.pct:.1f}% (95% CI {r.lo:.1f}-{r.hi:.1f})")
+t87=pd.read_csv(Q/"P87_sdg1631_slopes.csv"); r=t87[(t87.population=="victim_12m")&(t87.scope=="All")].iloc[0]; chk("SDG proxy trend", f"{r.OR_decade:.2f} (95% CrI {r.OR_lo:.2f}-{r.OR_hi:.2f})")
+r=pw[(pw.outcome=="told")&(pw.weighting=="population")&(pw.region=="All")].iloc[0]; chk("population-weighted told", f"{r.pct:.1f}% (95% CI {r.lo:.1f}-{r.hi:.1f}) told anyone")
+cv=pd.read_csv(Q/"P88_coverage_table.csv").set_index("group"); chk("population coverage", f"{cv.loc['Sub-Saharan Africa','pop_coverage_pct']:.1f}% of the")
 ok=sum(x[2] for x in checks)
 for lab,s,f in checks: print(("OK  " if f else "MISS"), lab, "|", s)
 print(f"\n{ok}/{len(checks)} numbers found in the PDF")

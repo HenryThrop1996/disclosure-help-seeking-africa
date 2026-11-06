@@ -29,26 +29,35 @@ af <- rnaturalearth::ne_countries(scale = 50, continent = "Africa", returnclass 
 m <- merge(af, as.data.frame(cty), by = "iso3", all.x = TRUE)
 cent <- suppressWarnings(st_point_on_surface(m[!is.na(m$rounds), ])); vac <- m[m$iso3 %in% ISO3[VACS], ]
 st_geometry(cent)[cent$iso3 == "ZAF"] <- st_sfc(st_point(c(22.8, -30.6)), crs = st_crs(cent))   # South Africa: label moved west, away from Lesotho
-# small countries whose round count is unreadable inside the border: number placed nearby with a pointer
-CALLOUT <- data.frame(iso3 = c("RWA", "BDI", "COM", "GMB", "TGO", "LSO", "STP"), lx = c(25.8, 25.6, 49.5, -17.4, 1.2, 33.8, -2.2), ly = c(2.6, -6.6, -7.6, 11.2, 3.2, -31.6, -3.0))
-CALL <- merge(CALLOUT, data.frame(iso3 = cent$iso3, rounds = cent$rounds, px = st_coordinates(cent)[, 1], py = st_coordinates(cent)[, 2]), by = "iso3")
-# island states too small to see at this scale: ring the islands (bounding-box centre) and name the country in the label
-ISL <- c(COM = "Comoros", STP = "São Tomé and Príncipe")
-for (k in names(ISL)) { bb <- st_bbox(m[m$iso3 == k, ]); CALL[CALL$iso3 == k, c("px", "py")] <- c(mean(bb[c("xmin", "xmax")]), mean(bb[c("ymin", "ymax")])) }
-CALL$txt <- ifelse(CALL$iso3 %in% names(ISL), paste0(ISL[CALL$iso3], ": ", CALL$rounds), as.character(CALL$rounds)); RING <- CALL[CALL$iso3 %in% names(ISL), ]
-CALL$ex <- CALL$px; CALL$ey <- CALL$py; k <- CALL$iso3 %in% names(ISL); vx <- CALL$lx[k] - CALL$px[k]; vy <- CALL$ly[k] - CALL$py[k]; CALL$ex[k] <- CALL$px[k] + 1.15 * vx / sqrt(vx^2 + vy^2); CALL$ey[k] <- CALL$py[k] + 1.15 * vy / sqrt(vx^2 + vy^2)   # line stops at the ring
-pA <- ggplot(m) + geom_sf(aes(fill = pct), colour = "white", linewidth = 0.15) +
+# Post-hoc addition 4 (e): small countries are listed as swatches below the map (as in Strain et al. 2026), not with pointers;
+# missing data has two classes: sub-Saharan countries without DHS data, and countries outside sub-Saharan Africa (UN WPP subregions)
+SMALL <- c("GMB", "TGO", "STP", "RWA", "BDI", "COM", "LSO")
+SSA <- fread(file.path(ROOT, "outputs/tables/P38_review/P88_wpp2025_f1524_by_country.csv"))$iso3
+m$cls <- ifelse(!is.na(m$pct), "data", ifelse(m$iso3 %in% SSA, "nodata", "na"))
+FILL_NODATA <- "#C9C9C9"; FILL_NA <- "#F4F4F4"
+SCALE <- function(guide) scale_fill_gradient(low = "#EEF0F7", high = NAVY, limits = c(15, 50), breaks = c(20, 30, 40, 50), name = "Sought any\nhelp, %", guide = guide)
+pA <- ggplot() +
+  geom_sf(data = m[m$cls == "na", ], fill = FILL_NA, colour = "white", linewidth = 0.15) +
+  geom_sf(data = m[m$cls == "nodata", ], fill = FILL_NODATA, colour = "white", linewidth = 0.15) +
+  geom_sf(data = m[m$cls == "data", ], aes(fill = pct), colour = "white", linewidth = 0.15) +
   geom_sf(data = vac, fill = NA, colour = "black", linewidth = 0.55) +
-  geom_sf_text(data = cent[!cent$iso3 %in% CALLOUT$iso3, ], aes(label = rounds), size = 2.4, family = FONT) +
-  geom_segment(data = CALL, aes(x = lx, y = ly, xend = ex, yend = ey), linewidth = 0.25, colour = "black") +
-  geom_point(data = CALL[!CALL$iso3 %in% names(ISL), ], aes(px, py), size = 0.35) +
-  geom_point(data = RING, aes(px, py), shape = 21, size = 5.5, stroke = 0.45, fill = NA, colour = "black") +
-  geom_label(data = CALL, aes(lx, ly, label = txt), size = 2.4, family = FONT, label.size = 0, label.padding = unit(0.08, "lines"), fill = "white") +
-  scale_fill_gradient(low = "#EEF0F7", high = NAVY, na.value = "#E6E6E6", limits = c(15, 50), breaks = c(20, 30, 40, 50),
-                      name = "Sought any\nhelp, %") +
+  geom_sf_text(data = cent[!cent$iso3 %in% SMALL, ], aes(label = rounds), size = 2.4, family = FONT) +
+  SCALE(guide_colourbar(barwidth = 0.6, barheight = 7, title.position = "top")) +
   coord_sf(xlim = c(-18, 52), ylim = c(-35, 25)) + theme_void(base_size = 9, base_family = FONT) +
   theme(legend.position = "right", legend.title = element_text(size = 9), plot.tag = element_text(face = "bold", size = 13)) +
-  guides(fill = guide_colourbar(barwidth = 0.6, barheight = 7, title.position = "top")) + labs(tag = "A", fill = "Sought any\nhelp, %")
+  labs(tag = "A")
+# key below the map: small countries (same colour scale; number = DHS rounds) and the two missing-data classes
+sm <- cty[match(SMALL, iso3), .(iso3, name, pct, rounds)]
+sm[, `:=`(col = (seq_len(.N) - 1) %/% 4, row = (seq_len(.N) - 1) %% 4)]
+KEY <- data.table(lab = c("No DHS data (sub-Saharan Africa)", "Outside sub-Saharan Africa"), fill = c(FILL_NODATA, FILL_NA), col = 2, row = 0:1)
+pS <- ggplot() +
+  geom_tile(data = sm, aes(x = col * 3.2, y = -row, fill = pct), width = 0.42, height = 0.7, colour = "grey40", linewidth = 0.2) +
+  geom_text(data = sm, aes(x = col * 3.2 + 0.35, y = -row, label = sprintf("%s (%d)", name, rounds)), hjust = 0, family = FONT, size = 2.5) +
+  geom_tile(data = KEY, aes(x = col * 3.2, y = -row), fill = KEY$fill, width = 0.42, height = 0.7, colour = "grey40", linewidth = 0.2) +
+  geom_text(data = KEY, aes(x = col * 3.2 + 0.35, y = -row, label = lab), hjust = 0, family = FONT, size = 2.5) +
+  annotate("text", x = -0.25, y = 0.85, label = "Small countries (number of DHS rounds)", hjust = 0, family = FONT, size = 2.6, fontface = "bold") +
+  SCALE("none") + scale_x_continuous(limits = c(-0.3, 9.8), expand = c(0, 0)) + scale_y_continuous(limits = c(-3.5, 1.2), expand = c(0, 0)) +
+  theme_void(base_family = FONT)
 GREY <- c(West = "#2E2E2E", Central = "#8F8F8F", East = "#CFCFCF", Southern = "#5E5E5E")
 lab <- data.frame(x = c(-5, 21, 37, 22), y = c(13, -1, 1, -29), t = c("W", "C", "E", "S"), col = c("white", "white", "black", "white"))
 pB <- ggplot(m) + geom_sf(aes(fill = region), colour = "white", linewidth = 0.1, show.legend = FALSE) +
@@ -94,8 +103,9 @@ pC <- ggplot() +
   theme(axis.text.x = element_text(size = 9, margin = margin(t = 2)), axis.ticks.x = element_line(colour = "black", linewidth = 0.4),
         axis.ticks.length.x = unit(2.5, "pt"), axis.title.x = element_text(size = 9.5, margin = margin(t = 5)),
         plot.tag = element_text(face = "bold", size = 13), plot.margin = margin(4, 8, 4, 4))
-fig <- ((pA | pB) + plot_layout(widths = c(2.1, 1))) / pC + plot_layout(heights = c(1, 2.35))
-ragg::agg_png(file.path(FG, "fig1_map_help_seeking.png"), width = 8, height = 10.6, units = "in", res = 300, background = "white")
+fig <- (((pA / pS) + plot_layout(heights = c(1, 0.3))) | pB) + plot_layout(widths = c(2.1, 1))
+fig <- wrap_elements(full = fig) / pC + plot_layout(heights = c(1.3, 2.35))
+ragg::agg_png(file.path(FG, "fig1_map_help_seeking.png"), width = 8, height = 11.4, units = "in", res = 300, background = "white")
 print(fig); invisible(dev.off())
 fwrite(F, file.path(TB, "fig1_forest_rows.csv"))
 cat("fig1 written; women =", NT, "; overall =", est(al$pct, al$lo, al$hi), "\n")

@@ -174,6 +174,7 @@ flowchart TD
 | Adjusted trends (post-hoc) | [`83b_trend_standardised.R`](analysis/83b_trend_standardised.R), [`84_trend_model_adjusted.py`](pooling/84_trend_model_adjusted.py), [`84_trend_model_crude_samesurveys.py`](pooling/84_trend_model_crude_samesurveys.py), [`61h_fig_trends_adjusted.R`](figures/61h_fig_trends_adjusted.R) | trend curves standardised for the women's characteristics, compared with unadjusted curves on the same surveys |
 | Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
 | Spline trends (post-hoc) | [`84e_trend_splines.R`](analysis/84e_trend_splines.R), [`61j_fig_trend_splines.R`](figures/61j_fig_trend_splines.R) | natural cubic splines (2–4 df) and a penalised smooth in place of the linear trend; LOO and likelihood-ratio comparison |
+| Reporting changes (post-hoc) | [`87_sdg1631_proxy.R`](review/87_sdg1631_proxy.R), [`87b_sdg1631_trend.py`](pooling/87b_sdg1631_trend.py), [`88_coverage_table.R`](review/88_coverage_table.R), [`61k_fig_trends_regional.R`](figures/61k_fig_trends_regional.R) | proxy for SDG indicator 16.3.1 (police or legal help among young women with violence in the past 12 months) and its trend; data coverage (UN WPP 2024); country trajectories by region |
 | Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
@@ -266,6 +267,8 @@ Code: [`harmonised/73_p37_country_models.R`](harmonised/73_p37_country_models.R)
 
 Help came mostly from family (80%), friends or neighbours (19%) and the partner's family (20%);
 4.9% went to the police and 1.7% to a health worker (percentages of those who sought help).
+Reporting to the police or legal services, a proxy for SDG indicator 16.3.1 (post-hoc), was 1.9% (1.3–2.6) among young women with violence in the past 12 months (population-weighted), with no clear trend (OR per decade 1.13 (0.62–1.83); Pr(decline) 0.30).
+The 33 countries with data are home to 91.8% of sub-Saharan women aged 15–24 years (UN World Population Prospects 2024).
 In VACS, after sexual violence, 50.4% of girls and 33.9% of boys told someone, and 10.8% and 5.7% sought help.
 
 <p align="center"><img src="docs/figures/fig_cascade_forest.png" width="760" alt="Disclosure cascade by country"></p>
@@ -403,6 +406,7 @@ The documents will be released with the paper; the time stamps and hashes below 
 | 2026-11-04 14:12 | `9f92e7d41fd71423` | CORRECTION 5 post-hoc: covariate-standardised trend curves (before running) |
 | 2026-11-05 07:46 | `c61b12b6e8a82389` | CORRECTION 5 post-hoc: trends by age group (before running) |
 | 2026-11-05 12:42 | `ca455b483f92a1c6` | CORRECTION 5 post-hoc: spline trend sensitivity (before running) |
+| 2026-11-06 08:40 | `5c3a95eb8735d907` | CORRECTION 5 post-hoc 4: reporting changes and SDG 16.3.1 proxy (before running) |
 
 ## 8. Software
 
