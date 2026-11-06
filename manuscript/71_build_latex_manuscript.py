@@ -737,7 +737,7 @@ All """ + str(len(P)) + r""" pooled estimates converged ($\hat R\le """ + f"{P.r
 
 \section{Discussion}\label{sec:discussion}
 
-\begin{table}[!htbp]\centering\footnotesize\renewcommand{\arraystretch}{1.3}
+\begin{table}[!htbp]\centering\footnotesize\setlength{\extrarowheight}{2.5pt}
 \caption{\textbf{What the findings support and what they do not}}\label{tab:interpret}
 \begin{tabular}{>{\raggedright\arraybackslash}p{2.9cm}>{\raggedright\arraybackslash}p{6.1cm}>{\raggedright\arraybackslash}p{6.1cm}}\toprule
 Finding & Supported by the data & Not supported, or not testable here \\ \midrule
