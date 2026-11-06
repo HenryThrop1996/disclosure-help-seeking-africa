@@ -889,12 +889,16 @@ The authors conceived and designed the study, pre-registered the analyses and ma
 """ + APP.build(tableS1, n37d, n37v, SRC_TABLE, FOREST_FIGS, METHODS_DETAIL, TYPE_TABLES + EXTRA_APP) + r"""
 \end{document}
 """
+EVC = pd.read_csv(T / "P38_review/P50b_events_by_country.csv"); evf, eva = EVC[EVC.outcome == "formal"], EVC[EVC.outcome == "sought_any"]
+fpct = put("formal_pct_events", round(100 * evf.events.sum() / evf.n.sum(), 1)); fmed = put("formal_median_events", int(evf.events.median()))
+amed = put("any_median_events", int(eva.events.median())); aelig = put("any_eligible_countries", int(eva.eligible.sum()))
+felig_east = put("formal_eligible_east", int(evf[evf.eligible & (evf.region == "East")].shape[0])); assert int(evf.eligible.sum()) == nfm
 PLAIN = [
     (r"were pooled only in a pre-specified harmonised analysis", r"were pooled only in a harmonised analysis"),
     (r" Post-hoc table.}", r"}"),
     (r"As a post-hoc proxy for", r"As a proxy for"),
     (r"The pre-registered primary outcome was formal help in DHS \(sought help in VACS\); because formal help could be modelled in only (\d+) countries among young women, we report seeking any help as the main outcome, formal help alongside it, and the registered analysis of women of all ages in the appendix.",
-     r"Formal help could be modelled in only \1 countries among young women, so seeking any help is the main outcome; formal help is reported alongside it, and an analysis of women of all ages is in the appendix."),
+     r"Formal help was rare: " + f"{fpct:.1f}" + r"\\% of young women with violence sought it, a median of " + str(fmed) + r" women per country. Because a country model needed at least 300 women and 30 who sought help, formal help could be modelled in only \1 countries (" + str(felig_east) + r" in East Africa), whereas seeking any help (median " + str(amed) + r" per country) could be modelled in " + str(aelig) + r". Seeking any help is therefore the main outcome; formal help is reported alongside it, and an analysis of women of all ages, with more events, is in the appendix."),
     (r"We pre-specified predictors from", r"We chose predictors from"),
     (r"all pre-specified predictors", r"all predictors"),
     (r" \(pre-registration 42\)", r""),
