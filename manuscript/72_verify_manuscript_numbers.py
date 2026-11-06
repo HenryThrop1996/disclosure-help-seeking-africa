@@ -56,6 +56,7 @@ s87=pd.read_csv(Q/"P87_sdg1631_pooled.csv"); r=s87[(s87.population=="victim_12m"
 chk("SDG proxy population-weighted", f"{r.pct:.1f}% (95% CI {r.lo:.1f}-{r.hi:.1f})")
 t87=pd.read_csv(Q/"P87_sdg1631_slopes.csv"); r=t87[(t87.population=="victim_12m")&(t87.scope=="All")].iloc[0]; chk("SDG proxy trend", f"{r.OR_decade:.2f} (95% CrI {r.OR_lo:.2f}-{r.OR_hi:.2f})")
 r=pw[(pw.outcome=="told")&(pw.weighting=="population")&(pw.region=="All")].iloc[0]; chk("population-weighted told", f"{r.pct:.1f}% (95% CI {r.lo:.1f}-{r.hi:.1f}) told anyone")
+d87=pd.read_csv(Q/"P87_sdg1631_definitions.csv").set_index("definition").drop("police_legal"); chk("SDG proxy wider definitions", f"{d87.pct.min():.1f}% to {d87.pct.max():.1f}%")
 cv=pd.read_csv(Q/"P88_coverage_table.csv").set_index("group"); chk("population coverage", f"{cv.loc['Sub-Saharan Africa','pop_coverage_pct']:.1f}% of the")
 # Correction 5 post-hoc addition 5: population-weighted trend curves (read from 84f output)
 pwt=pd.read_csv(Q/"P39pw_summary.csv").set_index(["outcome","scope"])
