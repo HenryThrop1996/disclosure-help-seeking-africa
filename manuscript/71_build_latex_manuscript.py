@@ -627,7 +627,7 @@ Most young survivors of violence in sub-Saharan Africa never reach help,\cite{pa
 
 \section{Methods}\label{sec:methods}
 \subsection{Data}\label{sec:data}
-\textbf{Data.} We used all DHS rounds from sub-Saharan Africa with the domestic violence module and help-seeking questions (""" + str(nS) + r""" surveys, """ + str(nC) + r""" countries, 2004--2025; """ + str(N['n_multiround_countries']) + r""" countries with repeated rounds), in which one randomly selected woman per household is interviewed in private,\cite{croft2018} and analysed girls aged 15--24 years who reported physical or sexual violence (n=""" + fmt(nD) + r"""). VACS from eight countries (2013--2023; """ + fmt(nV) + r""" girls and boys aged 13--24 years, """ + fmt(nVany) + r""" of whom reported violence)\cite{nguyen2019} add boys, younger adolescents and separate questions on sexual and physical violence, in East and Southern Africa. Percentages were never pooled across the two surveys because they measure different quantities: DHS records whether women ever sought help for any violence they experienced, whereas VACS asks girls and boys about sexual and physical violence separately, from age 13 years and in eight East and Southern African countries. Associations, which do not require comparable levels, were pooled only in a pre-specified harmonised analysis (appendix table~\ref{tab:sources}). The countries with data were home to """ + f"{cov_all:.1f}" + r"""\% of the """ + f"{COV.loc['Sub-Saharan Africa', 'f1524_millions']:.0f}" + r""" million women aged 15--24 years in sub-Saharan Africa in 2025;\cite{wpp2024} the most populous countries without data were """ + nodata_big + r""" (table~\ref{tab:coverage}). The dataset closed on 1 November 2026.
+\textbf{Data.} We used all DHS rounds from sub-Saharan Africa with the domestic violence module and help-seeking questions (""" + str(nS) + r""" surveys, """ + str(nC) + r""" countries, 2004--2025; """ + str(N['n_multiround_countries']) + r""" countries with repeated rounds), in which one randomly selected woman per household is interviewed in private,\cite{croft2018} and analysed girls aged 15--24 years who reported physical \text{\&/or} sexual violence (n=""" + fmt(nD) + r"""). VACS from eight countries (2013--2023; """ + fmt(nV) + r""" girls and boys aged 13--24 years, """ + fmt(nVany) + r""" of whom reported violence)\cite{nguyen2019} add boys, younger adolescents and separate questions on sexual and physical violence, in East and Southern Africa. Percentages of help-seeking were never pooled across the two surveys because they measure different quantities: DHS records whether women ever sought help for any violence they experienced, whereas VACS asks girls and boys about sexual and physical violence separately, from age 13 years and in eight East and Southern African countries. Associations, which do not require comparable levels, were pooled only in a pre-specified harmonised analysis (appendix table~\ref{tab:sources}). The countries with data were home to """ + f"{cov_all:.1f}" + r"""\% of the """ + f"{COV.loc['Sub-Saharan Africa', 'f1524_millions']:.0f}" + r""" million women aged 15--24 years in sub-Saharan Africa in 2025;\cite{wpp2024} the most populous countries without data were """ + nodata_big + r""" (table~\ref{tab:coverage}).
 
 """ + COVTAB + r"""
 
@@ -876,6 +876,58 @@ The authors conceived and designed the study, pre-registered the analyses and ma
 """ + APP.build(tableS1, n37d, n37v, SRC_TABLE, FOREST_FIGS, METHODS_DETAIL, TYPE_TABLES + EXTRA_APP) + r"""
 \end{document}
 """
+PLAIN = [
+    (r"were pooled only in a pre-specified harmonised analysis", r"were pooled only in a harmonised analysis"),
+    (r" Post-hoc table.}", r"}"),
+    (r"As a post-hoc proxy for", r"As a proxy for"),
+    (r"The pre-registered primary outcome was formal help in DHS \(sought help in VACS\); because formal help could be modelled in only (\d+) countries among young women, we report seeking any help as the main outcome, formal help alongside it, and the registered analysis of women of all ages in the appendix.",
+     r"Formal help could be modelled in only \1 countries among young women, so seeking any help is the main outcome; formal help is reported alongside it, and an analysis of women of all ages is in the appendix."),
+    (r"We pre-specified predictors from", r"We chose predictors from"),
+    (r"all pre-specified predictors", r"all predictors"),
+    (r" \(pre-registration 42\)", r""),
+    (r"A post-hoc check compared", r"A further check compared"),
+    (r"A pre-registered harmonised analysis pooled", r"A harmonised analysis pooled"),
+    (r"Pre-registered sensitivity analyses used", r"Sensitivity analyses used"),
+    (r"\\textbf\{Pre-registration and software\.\} The analysis plan, all amendments \(.*?\) and their results were time-stamped with SHA-256 hashes before each analysis was run \(appendix\); the documents will be deposited on the Open Science Framework\.",
+     r"\\textbf{Software.} Analysis plans were time-stamped before each analysis was run and will be deposited on the Open Science Framework."),
+    (r", the pre-registered primary outcome, did not fall", r" did not fall"),
+    (r", the registered primary outcome, did not fall", r" did not fall"),
+    (r", the registered primary outcome, was too rare", r" was too rare"),
+    (r"\(post-hoc; ", r"("),
+    (r"; post-hoc\)", r")"),
+    (r" \(post-hoc\)", r""),
+    (r" \(post-hoc sensitivity analysis\)", r" (sensitivity analysis)"),
+    (r"In a post-hoc sensitivity analysis", r"In a sensitivity analysis"),
+    (r" Post-hoc analysis\.\}", r"}"),
+    (r" Post-hoc presentation of the same model\.\}", r"}"),
+    (r"In the registered analysis of women of all ages", r"In an analysis of women of all ages"),
+    (r"a pre-registered plan with time-stamped amendments; ", r""),
+    (r"conceived and designed the study, pre-registered the analyses and made all", r"conceived and designed the study and made all"),
+    (r"Every analysis was time-stamped before it was run \(or labelled post-hoc\), numbers in the text", r"Numbers in the text"),
+    (r"and all pre-registered sensitivity analyses \(Pre-registrations [^)]*\)\.", r"and all sensitivity analyses."),
+    (r"Pre-specified rules required", r"We required"),
+    (r" \(Correction \d\)", r""),
+    (r" \(Correction 4 coding\)", r""),
+    (r"we restricted a pre-registered secondary analysis to", r"we restricted a secondary analysis to"),
+    (r"Added after an internal methodological review and pre-registered: crude", r"These were: crude"),
+    (r"\(the pre-specified rule\)", r"(our decision rule)"),
+    (r"The pre-specified rule retains", r"Our decision rule retains"),
+    (r"Registered analysis: women of all ages", r"Women of all ages"),
+    (r" \(registered analysis\)\}", r"}"),
+    (r", as in the registered analysis;", r";"),
+    (r" The registered primary outcome was formal help; the analysis was restricted to ages 15--24 years after these results were seen \(amendment A6\)\.", r""),
+    (r"The registered model had no survey residual \(\$\\sigma_e\$\); it was added before interpretation because the residual variation between a country's surveys would otherwise be treated as sampling error \(Pre-registration 39, deviation 1\)\.",
+     r"The survey residual ($\\sigma_e$) keeps residual variation between a country's surveys from being treated as sampling error."),
+    (r" \(Pre-registration 39, addendum B\)", r""),
+    (r"pooled with the registered Gibbs implementation", r"pooled with the Gibbs implementation"),
+    (r" Pre-registration 37\.", r""),
+    (r"\n\{\\footnotesize\\setlength\{\\tabcolsep\}\{3\.5pt\}\n\\begin\{longtable\}[^\n]*\n\\caption\{\\textbf\{Pre-registration record\}\}.*?in the code repository\.\}\\par\}\n", "\n"),
+]
+for a, b in PLAIN:
+    tex, k = re.subn(a, b, tex, flags=re.S)
+    assert k >= 1, f"plain-language target not found: {a[:80]}"
+left = re.findall(r"[^.]{0,60}(?:pre-?regist|pre-?specif|registered|post-hoc|amendment|deviation \d|Correction \d)[^.]{0,40}", tex, flags=re.I)
+assert not left, f"pre-registration wording left: {left}"
 tex = house_style(tex)
 # keep only cited references in the paper; uncited ones go to references_for_later.tex (they return automatically once cited again)
 _ba, _bb = tex.index("\\begin{thebibliography}"), tex.index("\\end{thebibliography}")
