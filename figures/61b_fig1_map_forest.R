@@ -36,14 +36,27 @@ SSA <- fread(file.path(ROOT, "outputs/tables/P38_review/P88_wpp2025_f1524_by_cou
 m$cls <- ifelse(!is.na(m$pct), "data", ifelse(m$iso3 %in% SSA, "nodata", "na"))
 FILL_NODATA <- "#C9C9C9"; FILL_NA <- "#F4F4F4"
 SCALE <- function(guide) scale_fill_gradient(low = "#EEF0F7", high = NAVY, limits = c(15, 50), breaks = c(20, 30, 40, 50), name = "Sought any\nhelp, %", guide = guide)
+# pointers: each small country is named on the map with a leader line (values and rounds are in the key below); islands get a ring
+CALLOUT <- data.frame(iso3 = c("GMB", "TGO", "STP", "RWA", "BDI", "COM", "LSO"), lab = c("Gambia", "Togo", "São Tomé and Príncipe", "Rwanda", "Burundi", "Comoros", "Lesotho"),
+                      lx = c(-23.4, 0.2, -1.5, 23.6, 23.6, 47.2, 33.2), ly = c(13.45, 3.4, -3.4, 2.4, -6.8, -6.2, -33.4), hj = c(0, 0.5, 0.5, 1, 1, 0, 0))
+pts <- suppressWarnings(st_point_on_surface(m[m$iso3 %in% CALLOUT$iso3, ]))
+CALL <- merge(CALLOUT, data.frame(iso3 = pts$iso3, px = st_coordinates(pts)[, 1], py = st_coordinates(pts)[, 2]), by = "iso3")
+ISL <- c("COM", "STP")
+for (k in ISL) { bb <- st_bbox(m[m$iso3 == k, ]); CALL[CALL$iso3 == k, c("px", "py")] <- c(mean(bb[c("xmin", "xmax")]), mean(bb[c("ymin", "ymax")])) }
+CALL$ex <- CALL$px; CALL$ey <- CALL$py; k <- CALL$iso3 %in% ISL                                    # leader line stops at the ring for islands
+vx <- CALL$lx[k] - CALL$px[k]; vy <- CALL$ly[k] - CALL$py[k]; CALL$ex[k] <- CALL$px[k] + 1.15 * vx / sqrt(vx^2 + vy^2); CALL$ey[k] <- CALL$py[k] + 1.15 * vy / sqrt(vx^2 + vy^2)
 pA <- ggplot() +
   geom_sf(data = m[m$cls == "na", ], fill = FILL_NA, colour = "white", linewidth = 0.15) +
   geom_sf(data = m[m$cls == "nodata", ], fill = FILL_NODATA, colour = "white", linewidth = 0.15) +
   geom_sf(data = m[m$cls == "data", ], aes(fill = pct), colour = "white", linewidth = 0.15) +
   geom_sf(data = vac, fill = NA, colour = "black", linewidth = 0.55) +
   geom_sf_text(data = cent[!cent$iso3 %in% SMALL, ], aes(label = rounds), size = 2.4, family = FONT) +
+  geom_segment(data = CALL, aes(x = lx, y = ly, xend = ex, yend = ey), linewidth = 0.25, colour = "black") +
+  geom_point(data = CALL[!CALL$iso3 %in% ISL, ], aes(px, py), size = 0.35) +
+  geom_point(data = CALL[CALL$iso3 %in% ISL, ], aes(px, py), shape = 21, size = 5.5, stroke = 0.45, fill = NA, colour = "black") +
+  geom_label(data = CALL, aes(lx, ly, label = lab, hjust = hj), size = 2.3, family = FONT, label.size = 0, label.padding = unit(0.08, "lines"), fill = "white") +
   SCALE(guide_colourbar(barwidth = 0.6, barheight = 7, title.position = "top")) +
-  coord_sf(xlim = c(-18, 52), ylim = c(-35, 25)) + theme_void(base_size = 9, base_family = FONT) +
+  coord_sf(xlim = c(-24, 52), ylim = c(-35, 25)) + theme_void(base_size = 9, base_family = FONT) +   # wider west: room for the Gambia pointer
   theme(legend.position = "right", legend.title = element_text(size = 9), plot.tag = element_text(face = "bold", size = 13)) +
   labs(tag = "A")
 # key below the map: small countries (same colour scale; number = DHS rounds) and the two missing-data classes
