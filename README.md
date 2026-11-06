@@ -175,6 +175,7 @@ flowchart TD
 | Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
 | Spline trends (post-hoc) | [`84e_trend_splines.R`](analysis/84e_trend_splines.R), [`61j_fig_trend_splines.R`](figures/61j_fig_trend_splines.R) | natural cubic splines (2–4 df) and a penalised smooth in place of the linear trend; LOO and likelihood-ratio comparison |
 | Reporting changes (post-hoc) | [`87_sdg1631_proxy.R`](review/87_sdg1631_proxy.R), [`87b_sdg1631_trend.py`](pooling/87b_sdg1631_trend.py), [`88_coverage_table.R`](review/88_coverage_table.R), [`61k_fig_trends_regional.R`](figures/61k_fig_trends_regional.R) | proxy for SDG indicator 16.3.1 (police or legal help among young women with violence in the past 12 months) and its trend; data coverage (UN WPP 2024); country trajectories by region |
+| Headline trends (post-hoc) | [`84f_trend_popweighted.py`](pooling/84f_trend_popweighted.py), [`61l_fig_trends_popweighted.R`](figures/61l_fig_trends_popweighted.R) | population-weighted average of the countries' fitted trajectories (UN WPP 2024), the headline trend figure |
 | Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
@@ -333,7 +334,9 @@ Code: [`analysis/83_trend_survey_estimates.R`](analysis/83_trend_survey_estimate
 Within countries, the trend adjusted for the women's characteristics was similar but less certain (0.73 (0.54–1.01); 0.68 (0.51–0.99) in DHS phase 6 or later). The fall was not linear (post-hoc): in countries with repeated surveys the odds changed little before 2016 and fell from 2013 onwards, possibly with DHS questionnaire phases 7 and 8. Formal help, the registered primary outcome, did not fall.
 Southern Africa has no repeated surveys, so its trend is not estimated.
 
-<p align="center"><img src="docs/figures/fig_trends.png" width="760" alt="Trends in disclosure and help-seeking 2004-2025"></p>
+**Headline curves (post-hoc, after Strain et al. 2026).** The table above describes a typical country. Averaging the countries' own fitted trajectories with population weights (women aged 15–24 in each country and year, UN WPP 2024) describes young women in the countries studied: seeking any help fell from 40.1% in 2005 to 26.0% in 2025 (-14.1 percentage points, 95% CrI -20.1 to -8.3), telling anyone fell by 12.2 points, and formal help rose by 1.2 points (Pr(decline) 0.05). Code: [`pooling/84f_trend_popweighted.py`](pooling/84f_trend_popweighted.py), figure [`figures/61l_fig_trends_popweighted.R`](figures/61l_fig_trends_popweighted.R).
+
+<p align="center"><img src="docs/figures/fig_trends_popweighted.png" width="760" alt="Population-weighted trends in disclosure and help-seeking 2004-2025"></p>
 
 ### 5.6 Model checking
 
@@ -407,6 +410,7 @@ The documents will be released with the paper; the time stamps and hashes below 
 | 2026-11-05 07:46 | `c61b12b6e8a82389` | CORRECTION 5 post-hoc: trends by age group (before running) |
 | 2026-11-05 12:42 | `ca455b483f92a1c6` | CORRECTION 5 post-hoc: spline trend sensitivity (before running) |
 | 2026-11-06 08:40 | `5c3a95eb8735d907` | CORRECTION 5 post-hoc 4: reporting changes and SDG 16.3.1 proxy (before running) |
+| 2026-11-06 10:05 | `835b898c206c7e28` | CORRECTION 5 post-hoc 5: population-weighted trend curves as headline (before final run) |
 
 ## 8. Software
 

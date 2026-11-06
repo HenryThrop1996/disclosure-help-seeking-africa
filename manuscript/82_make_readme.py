@@ -24,6 +24,7 @@ p38 = lambda a, m, t: T38[(T38.analysis == a) & (T38.model == m) & (T38.term == 
 cas = lambda o, lvl="all", reg=None: C[(C.outcome == o) & (C.level == lvl) & ((C.region == reg) if reg else True)].iloc[0]
 pw = lambda o, reg="All": PW[(PW.outcome == o) & (PW.weighting == "population") & (PW.region == reg)].iloc[0]
 P87 = pd.read_csv(P38 / "P87_sdg1631_pooled.csv"); P87s = pd.read_csv(P38 / "P87_sdg1631_slopes.csv"); COV = pd.read_csv(P38 / "P88_coverage_table.csv").set_index("group")
+PWT = pd.read_csv(P38 / "P39pw_summary.csv").set_index(["outcome", "scope"])
 sdg = P87[(P87.population == "victim_12m") & (P87.weighting == "population") & (P87.region == "All")].iloc[0]; sdgt = P87s[(P87s.population == "victim_12m") & (P87s.scope == "All")].iloc[0]
 vac = lambda st, sex: VC[(VC.level == "all VACS countries") & (VC.type == "SV") & (VC.sex == sex) & (VC.step == st)].iloc[0]
 hs = lambda k: HS[(HS.source == k) & (HS.region == "All")].pct.iloc[0]
@@ -232,6 +233,7 @@ flowchart TD
 | Trends by age (post-hoc) | [`83c_trend_by_age.R`](analysis/83c_trend_by_age.R), [`84_trend_model_age.py`](pooling/84_trend_model_age.py), [`61i_fig_trends_by_age.R`](figures/61i_fig_trends_by_age.R) | trend curves for women aged 15–24, 25–34 and 35–49, and an age-by-time interaction test |
 | Spline trends (post-hoc) | [`84e_trend_splines.R`](analysis/84e_trend_splines.R), [`61j_fig_trend_splines.R`](figures/61j_fig_trend_splines.R) | natural cubic splines (2–4 df) and a penalised smooth in place of the linear trend; LOO and likelihood-ratio comparison |
 | Reporting changes (post-hoc) | [`87_sdg1631_proxy.R`](review/87_sdg1631_proxy.R), [`87b_sdg1631_trend.py`](pooling/87b_sdg1631_trend.py), [`88_coverage_table.R`](review/88_coverage_table.R), [`61k_fig_trends_regional.R`](figures/61k_fig_trends_regional.R) | proxy for SDG indicator 16.3.1 (police or legal help among young women with violence in the past 12 months) and its trend; data coverage (UN WPP 2024); country trajectories by region |
+| Headline trends (post-hoc) | [`84f_trend_popweighted.py`](pooling/84f_trend_popweighted.py), [`61l_fig_trends_popweighted.R`](figures/61l_fig_trends_popweighted.R) | population-weighted average of the countries' fitted trajectories (UN WPP 2024), the headline trend figure |
 | Checks | [`84_trend_model_noresid.py`](pooling/84_trend_model_noresid.py), [`81b_togo_exclusion.py`](review/81b_togo_exclusion.py), [`99_exploratory.py`](review/99_exploratory.py) | trend model without survey residual; Togo exclusion; post-hoc checks (trend shape, help-source denominators, perpetrators) |
 
 ## 4. Model construction
@@ -374,7 +376,9 @@ Code: [`analysis/83_trend_survey_estimates.R`](analysis/83_trend_survey_estimate
 Within countries, the trend adjusted for the women's characteristics was similar but less certain ({tr('sought_any')}; {tr6} in DHS phase 6 or later). The fall was not linear (post-hoc): in countries with repeated surveys the odds changed little before 2016 and fell from 2013 onwards, possibly with DHS questionnaire phases 7 and 8. Formal help, the registered primary outcome, did not fall.
 Southern Africa has no repeated surveys, so its trend is not estimated.
 
-<p align="center"><img src="docs/figures/fig_trends.png" width="760" alt="Trends in disclosure and help-seeking 2004-2025"></p>
+**Headline curves (post-hoc, after Strain et al. 2026).** The table above describes a typical country. Averaging the countries' own fitted trajectories with population weights (women aged 15–24 in each country and year, UN WPP 2024) describes young women in the countries studied: seeking any help fell from {f1(PWT.loc[('sought_any', 'All')].pct_2005)}% in 2005 to {f1(PWT.loc[('sought_any', 'All')].pct_2025)}% in 2025 ({f1(PWT.loc[('sought_any', 'All')].change_pp)} percentage points, 95% CrI {f1(PWT.loc[('sought_any', 'All')].change_lo)} to {f1(PWT.loc[('sought_any', 'All')].change_hi)}), telling anyone fell by {f1(-PWT.loc[('told', 'All')].change_pp)} points, and formal help rose by {f1(PWT.loc[('formal', 'All')].change_pp)} points (Pr(decline) {f2(PWT.loc[('formal', 'All')].P_decline)}). Code: [`pooling/84f_trend_popweighted.py`](pooling/84f_trend_popweighted.py), figure [`figures/61l_fig_trends_popweighted.R`](figures/61l_fig_trends_popweighted.R).
+
+<p align="center"><img src="docs/figures/fig_trends_popweighted.png" width="760" alt="Population-weighted trends in disclosure and help-seeking 2004-2025"></p>
 
 ### 5.6 Model checking
 
