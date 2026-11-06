@@ -945,6 +945,53 @@ for a, b in PLAIN:
     assert k >= 1, f"plain-language target not found: {a[:80]}"
 left = re.findall(r"[^.]{0,60}(?:pre-?regist|pre-?specif|registered|post-hoc|amendment|deviation \d|Correction \d)[^.]{0,40}", tex, flags=re.I)
 assert not left, f"pre-registration wording left: {left}"
+SHARP = [
+    ("L", r"Most young survivors of violence in sub-Saharan Africa never reach help,\cite{palermo2014,pereira2020} yet whether help-seeking is changing, and whether the factors associated with it are shared across regions, is unknown.",
+          r"Most young survivors of violence in sub-Saharan Africa never reach help.\cite{palermo2014,pereira2020} Whether this is changing, and whether the same factors are associated with help-seeking in every region, is unknown."),
+    ("R", r"Seeking any help fell in every region with repeated surveys, by about (\d+) percentage points between 2005 and 2025 and mostly after about 2013, whereas formal help did not fall\. Help-seeking was more likely after injury or severe violence, or once the relationship had ended, with the same pattern in every region and in independent sets of countries, and showed little association with wealth or education\.",
+          r"Seeking any help fell by about \1 percentage points between 2005 and 2025, in every region with repeated surveys and mostly after 2013; formal help did not fall. Young women sought help after injury, severe violence or the end of the relationship, with the same pattern in every region and in independent sets of countries; wealth and education made little difference."),
+    ("R", r"Help-seeking should be monitored alongside violence prevalence for the Sustainable Development Goals \(about (\d+)\\% of young women with recent violence reported it to the police or legal services, a proxy for indicator 16\.3\.1, with no clear change since 2004\), and programmes should create earlier, low-threshold routes to help, including for boys, rather than assume that help-seeking will rise with education or wealth\.",
+          r"Only about \1\\% of young women with recent violence reported it to the police or legal services (a proxy for SDG indicator 16.3.1), with no clear change since 2004, so help-seeking should be monitored alongside violence prevalence. Programmes should create earlier, low-threshold routes to help, including for boys, and not assume that help-seeking will rise with education or wealth."),
+    ("R", r"Pooled percentages are given two ways: weighting each country by its population of women aged 15--24 years \(WorldPop;(\\cite\{worldpop2025\}) a country's rounds share its weight\), which estimates the percentage among all young women with violence in the countries studied, and weighting surveys by their sample size \(appendix table~\\ref\{tab:popw\}\)\.",
+          r"Pooled percentages weight each country by its population of women aged 15--24 years (WorldPop;\1 a country's rounds share its weight) or each survey by its sample size (appendix table~\\ref{tab:popw})."),
+    ("L", r"Second, we combined the country odds ratios in a Bayesian hierarchical model of countries within UN regions, in which each regional and all-region estimate borrows strength from the others while countries and regions are allowed to differ.",
+          r"Second, we combined the country odds ratios in a Bayesian hierarchical model of countries within UN regions: countries and regions may differ, but each estimate borrows strength from the others."),
+    ("R", r"for a new country,(\\cite\{riley2011\}) classify each factor as consistent across regions, region-specific or uncertain, and test replication in two random halves of countries\.",
+          r"for a new country.\1 Each factor was classified as consistent across regions, region-specific or uncertain, and tested for replication in two random halves of countries."),
+    ("L", r"We estimated change over two decades in two complementary ways.", r"We estimated change in two ways."),
+    ("R", r"a Bayesian hierarchical meta-regression of the survey-level percentages gave population-weighted curves for the countries studied \(figure~\\ref\{fig:trends\}\) and curves for a typical country with 95\\% prediction intervals for a new country \(appendix figure~\\ref\{fig:trendstypical\}\) and the posterior probability of a decline; a frequentist",
+          r"a Bayesian hierarchical meta-regression of the survey-level percentages gave population-weighted curves (figure~\\ref{fig:trends}), typical-country curves with 95\\% prediction intervals (appendix figure~\\ref{fig:trendstypical}) and the posterior probability of a decline. A frequentist"),
+    ("L", r"Every Bayesian model went through a full workflow:", r"Every Bayesian model was checked:"),
+    ("R", r"Of ([\d\\,]+) young women who experienced violence, (.+?) told anyone, (.+?) sought any help and (.+?) sought formal help \(figure~\\ref\{fig:cascade\}\), weighting surveys by their sample size\. Weighting each country by its population of young women, (.+?) told anyone, (.+?) sought any help and (.+?) sought formal help\. With either weighting, more than (\d+)\\% of young survivors never sought help from formal services\.",
+          r"More than \8\\% of young survivors never sought help from formal services. Weighting each country by its population of young women, \5 told anyone, \6 sought any help and \7 sought formal help; weighting surveys by their sample size (\1 women), the figures were \2, \3 and \4 (figure~\\ref{fig:cascade})."),
+    ("R", r"Treating countries equally, a typical country had (.+?) of young survivors seeking any help, and a new country would be expected to have",
+          r"In a typical country, \1 of young survivors sought any help; a new country would be expected to have"),
+    ("L", r"These are descriptive levels. They support one clear statement: across", r"Across"),
+    ("L", r"The population-weighted and sample-weighted figures agree, so this does not depend", r"Both weightings agree, so this does not depend"),
+    ("L", r"The data support a consistent ordering:", r"The ordering is consistent:"),
+    ("L", r"Seeking any help fell (figure~\ref{fig:trends}). Among young women with violence in the 33 countries, weighting each country by its population, the percentage who sought any help fell from",
+          r"Seeking any help fell in every region with repeated surveys (figure~\ref{fig:trends}). Weighting each country by its population, the percentage of young women with violence who sought any help fell from"),
+    ("L", r" For a typical country (appendix figure~\ref{fig:trendstypical}), across", "\n\n" + r"For a typical country (appendix figure~\ref{fig:trendstypical}), across"),
+    ("L", r" The fall in seeking any help was not linear:", "\n\n" + r"The fall in seeking any help was not linear:"),
+    ("L", r" Within countries, the trend adjusted for the women's characteristics was similar", "\n\n" + r"Within countries, the trend adjusted for the women's characteristics was similar"),
+    ("L", r" A model without a trend predicted worse", "\n\n" + r"A model without a trend predicted worse"),
+    ("L", r"Partially pooled trajectories for each country borrowed strongly from the overall trend", r"Country trajectories borrowed strongly from the overall trend"),
+    ("L", r"so they cannot show which individual countries declined", r"so they cannot show which countries declined"),
+    ("L", r"The evidence for a fall in informal help-seeking is strong and consistent:", r"The fall in informal help-seeking is robust:"),
+    ("L", r"It supports the statement that fewer young women with violence told someone", r"Fewer young women with violence told someone"),
+    ("L", r"It does not establish why.", r"The data do not show why."),
+    ("L", r"The data support a consistent pattern: young women sought help more often", r"Young women sought help more often"),
+    ("L", r"The two surveys agree on the main association, that experiencing both physical and sexual violence roughly doubles the odds of seeking help, which supports it as a feature of help-seeking rather than of one survey's questions.",
+          r"Both surveys show that experiencing both physical and sexual violence roughly doubles the odds of seeking help, so this is a feature of help-seeking, not of one survey's questions."),
+    ("L", r"They disagree on telling anyone, most likely because of how the question is asked, so the pooled estimate for telling anyone should be read with caution.",
+          r"They disagree on telling anyone, probably because the question differs, so the pooled estimate for telling anyone is not reliable."),
+    ("L", r"; formal help was too rare among young women for well-powered models;", r";"),
+]
+for kind, a, b in SHARP:
+    if kind == "L":
+        assert tex.count(a) == 1, f"sharpness target found {tex.count(a)} times: {a[:80]}"; tex = tex.replace(a, b)
+    else:
+        tex, k = re.subn(a, b, tex, flags=re.S); assert k == 1, f"sharpness target found {k} times: {a[:80]}"
 tex = house_style(tex)
 # keep only cited references in the paper; uncited ones go to references_for_later.tex (they return automatically once cited again)
 _ba, _bb = tex.index("\\begin{thebibliography}"), tex.index("\\end{thebibliography}")
