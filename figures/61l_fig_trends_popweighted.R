@@ -1,43 +1,47 @@
-# 61l_fig_trends_popweighted.R - Correction 5, post-hoc addition 5: headline trend figure (layout and colours after Strain et al. 2026, figure 3).
-# Columns: all countries, then each region (one colour per region). Rows: told anyone, sought any help, sought formal help.
-# Line: population-weighted average of the countries' fitted trajectories (posterior median; 84f); grey band: 95% CrI.
-# Points with vertical lines: observed survey-weighted percentage in each survey (P39_survey_estimates.csv) with its design-based 95% CI (after co-author review, 2026-11-09: the
-# earlier dots on the line were decorative markers of the model curve and were mistaken for data).
-# Linear percentage axis from 0; each row has its own range. Southern Africa (no repeated surveys) is dashed: its curve comes from pooling only.
-suppressMessages({library(data.table); library(ggplot2)})
-ROOT <- Sys.getenv("RR"); T <- file.path(ROOT, "outputs/tables/P38_review"); FG <- file.path(ROOT, "outputs/figures/disclosure_v3")
-FONT <- "Times New Roman"
-md <- function(x, d = 1) sub("^-", "−", gsub(".", "·", formatC(x, format = "f", digits = d), fixed = TRUE))   # mid-dot decimals, true minus sign
-OUT <- c(told = "Told anyone (%)", sought_any = "Sought any help (%)", formal = "Sought formal help (%)")
-SC <- c(All = "Sub-Saharan Africa\n(33 countries)", West = "West Africa", Central = "Central Africa", East = "East Africa", Southern = "Southern Africa")
-COL <- c(All = "#1F5FA8", West = "#C0392B", Central = "#2E8B3E", East = "#1A93A6", Southern = "#7B5BA6")
-C <- fread(file.path(T, "P39pw_curves.csv")); S <- fread(file.path(T, "P39pw_summary.csv"))
+# 61l_fig_trends_popweighted.R - headline trend figure in the layout of Strain et al. 2026, figure 3 (revised 2026-11-09 after co-author review).
+# Columns: all 33 countries, then each region. Row 1: stacked distribution of young survivors across four mutually exclusive groups
+#   (told no one; told someone but sought no help; sought informal help only; sought formal help), from the posterior medians of the
+#   population-weighted curves of told anyone, sought any help and sought formal help (84f; the three curves are nested in every year and region).
+# Rows 2-3: sought any help and sought formal help - line: population-weighted average of the countries' fitted trajectories (posterior median),
+#   grey band: 95% CrI; hollow points and vertical lines: observed survey-weighted percentage in each survey with its design-based 95% CI.
+# Southern Africa (no repeated surveys) is dashed: its trend comes from pooling only.
+suppressMessages({library(data.table); library(ggplot2); library(patchwork)})
+ROOT <- Sys.getenv("RR"); T <- file.path(ROOT, "outputs/tables/P38_review"); FG <- file.path(ROOT, "outputs/figures/disclosure_v3"); FONT <- "Times New Roman"
+SC <- c(All = "Sub-Saharan Africa\n(33 countries)", West = "West Africa", Central = "Central Africa", East = "East Africa", Southern = "Southern Africa\n(no repeated surveys)")
+C <- fread(file.path(T, "P39pw_curves.csv")); C[, scope := factor(SC[scope], levels = SC)]
 OB <- fread(file.path(T, "P39_survey_estimates.csv"))[, .(outcome, region, year, pct = 100 * p, lo = 100 * lo, hi = 100 * hi)]
-OB <- rbind(copy(OB)[, scope := "All"], copy(OB)[, scope := region]); OB[, sc := scope]
-C[, sc := scope]; S[, sc := scope]
-S[, txt := ifelse(scope == "Southern", sprintf("2005–25: %s pp\n(no repeated surveys;\ncurve from pooling only)", md(change_pp)),
-                  sprintf("2005–25: %s pp\n(%s to %s)\nPr(decline) %s", md(change_pp), md(change_lo), md(change_hi),
-                          ifelse(P_decline > 0.999, ">0·999", ifelse(P_decline < 0.001, "<0·001", md(P_decline, 3)))))]
-YL <- data.table(outcome = rep(names(OUT), each = 2), y = c(0, 100, 0, 72, 0, 20)); YT <- YL[, .(ytop = max(y)), by = outcome]
-S <- merge(S, YT, by = "outcome")
-for (d in list(C, S, YL, OB)) d[, outcome := factor(OUT[outcome], levels = OUT)]
-for (d in list(C, S, OB)) d[, scope := factor(SC[scope], levels = SC)]
-g <- ggplot() +
-  geom_blank(data = YL, aes(2015, y)) +
-  geom_linerange(data = OB, aes(year, ymin = lo, ymax = hi, colour = sc), alpha = 0.35, linewidth = 0.25) +
-  geom_point(data = OB, aes(year, pct, colour = sc), shape = 1, size = 0.8, stroke = 0.35, alpha = 0.8) +
-  geom_ribbon(data = C, aes(year, ymin = lo, ymax = hi, group = scope), fill = "grey75", alpha = 0.45) +
-  geom_line(data = C, aes(year, pct, colour = sc, linetype = sc == "Southern"), linewidth = 0.7) +
-  geom_text(data = S, aes(2004.4, ytop, label = txt), hjust = 0, vjust = 1, family = FONT, size = 2.25, lineheight = 0.9) +
-  facet_grid(outcome ~ scope, scales = "free_y", switch = "y") +
-  scale_colour_manual(values = COL, guide = "none") + scale_linetype_manual(values = c(`FALSE` = "solid", `TRUE` = "22"), guide = "none") +
-  scale_x_continuous(breaks = seq(2005, 2025, 5), limits = c(2004, 2025.5)) +
-  scale_y_continuous(breaks = scales::breaks_pretty(4), expand = expansion(mult = c(0, 0.02))) +
-  labs(x = "Year", y = NULL) +
-  theme_minimal(base_family = FONT, base_size = 9) +
-  theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(colour = "grey88", linewidth = 0.3),
-        strip.text.x = element_text(size = 8.5, lineheight = 0.9), strip.text.y.left = element_text(size = 8.5, angle = 90), strip.placement = "outside",
-        axis.text = element_text(size = 7), axis.text.x = element_text(angle = 45, hjust = 1),
-        axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3), panel.spacing = unit(0.7, "lines"))
-ragg::agg_png(file.path(FG, "fig_trends_popweighted.png"), width = 7.4, height = 6.0, units = "in", res = 300, background = "white"); print(g); invisible(dev.off())
+OB <- rbind(copy(OB)[, scope := "All"], copy(OB)[, scope := region]); OB[, scope := factor(SC[scope], levels = SC)]
+W <- dcast(C, scope + year ~ outcome, value.var = "pct")
+G <- c("Told no one", "Told someone, sought no help", "Sought informal help only", "Sought formal help")
+ST <- rbind(W[, .(scope, year, group = G[4], pct = formal)], W[, .(scope, year, group = G[3], pct = sought_any - formal)],
+            W[, .(scope, year, group = G[2], pct = told - sought_any)], W[, .(scope, year, group = G[1], pct = 100 - told)])
+ST[, group := factor(group, levels = G)]
+FILL <- setNames(c("#EE8A3B", "#F7C873", "#A9C6E8", "#2F6DB5"), G)          # orange = least disclosure, blue = formal help (after Strain et al.)
+th <- theme_minimal(base_family = FONT, base_size = 8) +
+  theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(colour = "grey90", linewidth = 0.25),
+        axis.line = element_line(colour = "black", linewidth = 0.3), axis.ticks = element_line(colour = "black", linewidth = 0.3),
+        axis.text = element_text(size = 6.5), strip.text = element_text(size = 7.5, lineheight = 0.9), panel.spacing = unit(0.6, "lines"),
+        legend.position = "top", legend.justification = "left", legend.title = element_text(size = 7.5, face = "bold"), legend.text = element_text(size = 7),
+        legend.key.size = unit(0.3, "cm"), legend.margin = margin(0, 0, 0, 0))
+xs <- scale_x_continuous(breaks = c(2005, 2010, 2015, 2020, 2025), limits = c(2004, 2025.6))
+p1 <- ggplot(ST, aes(year, pct, fill = group)) + geom_area(position = position_stack(reverse = TRUE), colour = "white", linewidth = 0.15) +
+  facet_grid(. ~ scope) + scale_fill_manual(values = FILL, name = "Disclosure after violence", guide = guide_legend(nrow = 1)) +
+  xs + scale_y_continuous(limits = c(0, 100.01), breaks = seq(0, 100, 25), expand = c(0, 0)) +
+  labs(x = NULL, y = "Young survivors (%)") + th + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+line_row <- function(o, ylab, ymax, top = FALSE) {
+  d <- C[outcome == o]; d[, southern := grepl("^Southern", scope)]; ob <- OB[outcome == o]; ob[, hi := pmin(hi, ymax)]
+  ggplot() + geom_linerange(data = ob, aes(year, ymin = lo, ymax = hi), colour = "grey55", alpha = 0.45, linewidth = 0.25) +
+    geom_point(data = ob, aes(year, pct, shape = "Observed survey (95% CI)"), colour = "grey35", size = 0.75, stroke = 0.3) +
+    geom_ribbon(data = d, aes(year, ymin = lo, ymax = hi), fill = "grey70", alpha = 0.5) +
+    geom_line(data = d, aes(year, pct, linetype = southern, colour = "Estimate, population-weighted (95% CrI)"), linewidth = 0.65) +
+    facet_grid(. ~ scope) + xs + scale_y_continuous(limits = c(0, ymax), expand = c(0, 0)) +
+    scale_colour_manual(values = c("Estimate, population-weighted (95% CrI)" = "#1F4E8C"), name = NULL) +
+    scale_shape_manual(values = c("Observed survey (95% CI)" = 1), name = NULL) +
+    scale_linetype_manual(values = c(`FALSE` = "solid", `TRUE` = "22"), guide = "none") +
+    labs(x = if (o == "formal") "Year" else NULL, y = ylab) + th +
+    theme(strip.text = element_blank(), legend.position = if (top) "top" else "none") +
+    (if (o == "formal") theme(axis.text.x = element_text(angle = 45, hjust = 1)) else theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
+}
+P <- p1 / line_row("sought_any", "Sought any help (%)", 60, top = TRUE) / line_row("formal", "Sought formal help (%)", 16) + plot_layout(heights = c(1.15, 1, 0.8))
+ragg::agg_png(file.path(FG, "fig_trends_popweighted.png"), width = 7.4, height = 6.6, units = "in", res = 300, background = "white"); print(P); invisible(dev.off())
 cat("fig_trends_popweighted.png written\n")
