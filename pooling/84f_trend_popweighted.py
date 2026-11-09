@@ -34,7 +34,7 @@ def model(y, se, t, ci, cr, n_c, n_r, a0):                          # identical 
     sg_e = numpyro.sample("sigma_e", dist.HalfNormal(0.5))
     numpyro.sample("y", dist.Normal(a_c[ci] + b_c[ci] * t, jnp.sqrt(se**2 + sg_e**2)), obs=y)
 
-curves, summ = [], []
+curves, summ, draws = [], [], []                                                   # draws: 5-yearly curve draws for figure 4 error bars (2026-11-09)
 q = lambda v: np.quantile(v, [0.5, 0.025, 0.975])
 for o in ["told", "sought_any", "formal"]:
     d = E[E.outcome == o].reset_index(drop=True)
@@ -55,6 +55,7 @@ for o in ["told", "sought_any", "formal"]:
             p_draw[yr] = 100 * (expit(s["a_c"][:, m] + s["b_c"][:, m] * (yr - 2015) / 10) * w).sum(1)
             md, lo, hi = q(p_draw[yr]); lo50, hi50 = np.quantile(p_draw[yr], [0.25, 0.75])                     # 50% interval added 2026-11-09 (figure 4)
             curves.append(dict(outcome=o, scope=scope, year=yr, pct=md, lo=lo, hi=hi, lo50=lo50, hi50=hi50))
+        for yr in [2005, 2010, 2015, 2020, 2025]: draws.append(pd.DataFrame({"outcome": o, "scope": scope, "year": yr, "draw": np.arange(len(p_draw[yr])), "pct": p_draw[yr]}))
         ch = p_draw[2025] - p_draw[2005]
         dm = d[d.region == scope] if scope != "All" else d
         summ.append(dict(outcome=o, scope=scope, countries=int(m.sum()), surveys=len(dm), multi_round=int((dm.country.value_counts() >= 2).sum()),
@@ -63,4 +64,4 @@ for o in ["told", "sought_any", "formal"]:
     a = summ[-5]
     print(f"{o:10s} 2005 {a['pct_2005']:.1f}% -> 2025 {a['pct_2025']:.1f}% | change {a['change_pp']:.1f} pp ({a['change_lo']:.1f} to {a['change_hi']:.1f}) P(decline) {a['P_decline']:.3f} | Rhat {rhat:.3f} ESS {ess:.0f} div {div}")
     for x in summ[-4:]: print(f"    {x['scope']:9s} {x['pct_2005']:.1f} -> {x['pct_2025']:.1f} | {x['change_pp']:.1f} ({x['change_lo']:.1f} to {x['change_hi']:.1f}) P(decline) {x['P_decline']:.3f}")
-pd.DataFrame(curves).to_csv(T + "P39pw_curves.csv", index=False); pd.DataFrame(summ).to_csv(T + "P39pw_summary.csv", index=False)
+pd.concat(draws).to_csv(T + "P39pw_draws_5y.csv.gz", index=False); pd.DataFrame(curves).to_csv(T + "P39pw_curves.csv", index=False); pd.DataFrame(summ).to_csv(T + "P39pw_summary.csv", index=False)
