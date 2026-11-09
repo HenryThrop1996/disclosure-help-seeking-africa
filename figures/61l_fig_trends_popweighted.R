@@ -1,10 +1,10 @@
 # 61l_fig_trends_popweighted.R - headline trend figure in the layout of Strain et al. 2026, figure 3 (revised 2026-11-09 after co-author review).
 # Columns: all 33 countries, then each region. Row 1: stacked distribution of young survivors across four mutually exclusive groups
 #   (told no one; told someone but sought no help; sought informal help only; sought formal help), from the posterior medians of the
-#   population-weighted curves of told anyone, sought any help and sought formal help (84f; the three curves are nested in every year and region).
+#   population-weighted curves of told anyone, sought any help and sought formal help (84f; the curves are nested in every year and region), in 2005 and 2025, values printed on the bars.
 # Rows 2-3: sought any help and sought formal help - line: population-weighted average of the countries' fitted trajectories (posterior median),
 #   grey band: 95% CrI; hollow points and vertical lines: observed survey-weighted percentage in each survey with its design-based 95% CI.
-# Light outer band: 95% prediction interval for a new country (84g, P39_pred_band_full.csv, 2004-2025 for every region: true percentage in a survey of a new country; all countries: also
+# Bands, darkest to lightest: 50% CrI, 95% CrI (84f), 95% prediction interval for a new country (84g, P39_pred_band_full.csv, 2004-2025 for every region: true percentage in a survey of a new country; all countries: also
 #   a new region), nested bands after Andrich & Eltigani's heat and sexual violence draft.
 # Axes: sought any help 0-100% (as the top row), formal help 0-30%, so no band or interval is cut off.
 # Southern Africa (no repeated surveys) is dashed: its trend comes from pooling only.
@@ -28,28 +28,35 @@ th <- theme_minimal(base_family = FONT, base_size = 8) +
         legend.position = "top", legend.justification = "left", legend.title = element_text(size = 7.5, face = "bold"), legend.text = element_text(size = 7),
         legend.key.size = unit(0.3, "cm"), legend.margin = margin(0, 0, 0, 0))
 xs <- scale_x_continuous(breaks = c(2005, 2010, 2015, 2020, 2025), limits = c(2004, 2025.6))
-p1 <- ggplot(ST, aes(year, pct, fill = group)) + geom_area(position = position_stack(reverse = TRUE), colour = "white", linewidth = 0.15) +
-  facet_grid(. ~ scope) + scale_fill_manual(values = FILL, name = "Disclosure after violence", guide = guide_legend(nrow = 1)) +
-  xs + scale_y_continuous(limits = c(0, 100.01), breaks = seq(0, 100, 25), expand = c(0, 0)) +
-  labs(x = NULL, y = "Young survivors (%)") + th + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+GL <- setNames(c("Told no one", "Told, no help", "Informal only", "Formal help"), G)
+BR <- ST[year %in% c(2005, 2025)][, `:=`(yr = factor(year, levels = c(2025, 2005)), grp = factor(GL[as.character(group)], levels = rev(GL)),
+                                       lab = fifelse(group == G[4], gsub(".", "\u00b7", sprintf("%.1f", pct), fixed = TRUE), sprintf("%.0f", pct)))]
+p1 <- ggplot(BR, aes(pct, grp, fill = yr)) + geom_col(position = position_dodge(width = 0.82), width = 0.78, orientation = "y") +
+  geom_text(aes(x = pct + 1.2, label = lab), position = position_dodge(width = 0.82), hjust = 0, family = FONT, size = 2.15) +
+  facet_grid(. ~ scope) + scale_fill_manual(values = c(`2005` = "#BFCFDF", `2025` = "#2F5D8A"), breaks = c("2005", "2025"), name = "Young survivors, by year:") +
+  scale_x_continuous(limits = c(0, 80), breaks = seq(0, 75, 25), expand = c(0, 0)) +
+  labs(x = "Young survivors (%)", y = NULL) + th +
+  theme(axis.text.y = element_text(size = 7), panel.grid.major.y = element_blank(), panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.25),
+        axis.title.x = element_text(size = 7.5))
 line_row <- function(o, ylab, ymax, top = FALSE) {
   d <- C[outcome == o]; d[, southern := grepl("^Southern", scope)]; ob <- OB[outcome == o]; ob[, hi := pmin(hi, ymax)]
   pb <- PB[outcome == o]; pb[, pred_hi := pmin(pred_hi, ymax)]
-  ggplot() + geom_ribbon(data = pb, aes(year, ymin = pred_lo, ymax = pred_hi, fill = "Prediction interval for a new country (95%)")) +
-    geom_ribbon(data = d, aes(year, ymin = lo, ymax = hi, fill = "Credible interval of the estimate (95%)")) +
+  ggplot() + geom_ribbon(data = pb, aes(year, ymin = pred_lo, ymax = pred_hi, fill = "95% PI, new country")) +
+    geom_ribbon(data = d, aes(year, ymin = lo, ymax = hi, fill = "95% CrI")) +
+    geom_ribbon(data = d, aes(year, ymin = lo50, ymax = hi50, fill = "50% CrI")) +
     geom_linerange(data = ob, aes(year, ymin = lo, ymax = hi), colour = "grey55", alpha = 0.45, linewidth = 0.25) +
     geom_point(data = ob, aes(year, pct, shape = "Observed survey (95% CI)"), colour = "grey35", size = 0.75, stroke = 0.3) +
-    geom_line(data = d, aes(year, pct, linetype = southern, colour = "Estimate, population-weighted"), linewidth = 0.7) +
+    geom_line(data = d, aes(year, pct, linetype = southern, colour = "Estimate (population-weighted)"), linewidth = 0.7) +
     facet_grid(. ~ scope) + xs + scale_y_continuous(limits = c(0, ymax), breaks = if (ymax == 100) seq(0, 100, 25) else seq(0, ymax, 10), expand = c(0, 0)) +
-    scale_colour_manual(values = c("Estimate, population-weighted" = "#0B4F71"), name = NULL) +
-    scale_fill_manual(values = c("Prediction interval for a new country (95%)" = "#C6E5F1", "Credible interval of the estimate (95%)" = "#5FA8C9"), name = NULL,
-                      breaks = c("Credible interval of the estimate (95%)", "Prediction interval for a new country (95%)")) +
+    scale_colour_manual(values = c("Estimate (population-weighted)" = "#0B4F71"), name = NULL) +
+    scale_fill_manual(values = c("95% PI, new country" = "#DDF0F7", "95% CrI" = "#93C8DF", "50% CrI" = "#3E8FB5"), name = NULL,
+                      breaks = c("50% CrI", "95% CrI", "95% PI, new country")) +
     scale_shape_manual(values = c("Observed survey (95% CI)" = 1), name = NULL) +
     scale_linetype_manual(values = c(`FALSE` = "solid", `TRUE` = "22"), guide = "none") +
     labs(x = if (o == "formal") "Year" else NULL, y = ylab) + th +
     theme(strip.text = element_blank(), legend.position = if (top) "top" else "none") + guides(fill = guide_legend(order = 2, nrow = 1), colour = guide_legend(order = 1), shape = guide_legend(order = 3)) +
     (if (o == "formal") theme(axis.text.x = element_text(angle = 45, hjust = 1)) else theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
 }
-P <- p1 / line_row("sought_any", "Sought any help (%)", 100, top = TRUE) / line_row("formal", "Sought formal help (%)", 30) + plot_layout(heights = c(1.15, 1, 0.8))
+P <- p1 / line_row("sought_any", "Sought any help (%)", 100, top = TRUE) / line_row("formal", "Sought formal help (%)", 30) + plot_layout(heights = c(0.95, 1, 0.8))
 ragg::agg_png(file.path(FG, "fig_trends_popweighted.png"), width = 7.4, height = 6.6, units = "in", res = 300, background = "white"); print(P); invisible(dev.off())
 cat("fig_trends_popweighted.png written\n")

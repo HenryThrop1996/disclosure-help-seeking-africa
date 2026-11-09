@@ -53,7 +53,8 @@ for o in ["told", "sought_any", "formal"]:
         for j, yr in enumerate(YEARS):
             w = P[m, j] / P[m, j].sum()
             p_draw[yr] = 100 * (expit(s["a_c"][:, m] + s["b_c"][:, m] * (yr - 2015) / 10) * w).sum(1)
-            md, lo, hi = q(p_draw[yr]); curves.append(dict(outcome=o, scope=scope, year=yr, pct=md, lo=lo, hi=hi))
+            md, lo, hi = q(p_draw[yr]); lo50, hi50 = np.quantile(p_draw[yr], [0.25, 0.75])                     # 50% interval added 2026-11-09 (figure 4)
+            curves.append(dict(outcome=o, scope=scope, year=yr, pct=md, lo=lo, hi=hi, lo50=lo50, hi50=hi50))
         ch = p_draw[2025] - p_draw[2005]
         dm = d[d.region == scope] if scope != "All" else d
         summ.append(dict(outcome=o, scope=scope, countries=int(m.sum()), surveys=len(dm), multi_round=int((dm.country.value_counts() >= 2).sum()),
