@@ -29,18 +29,18 @@ th <- theme_minimal(base_family = FONT, base_size = 8) +
         legend.key.size = unit(0.3, "cm"), legend.margin = margin(0, 0, 0, 0))
 xs <- scale_x_continuous(breaks = c(2005, 2010, 2015, 2020, 2025), limits = c(2004, 2025.6))
 GL <- setNames(c("Told no one", "Told, no help", "Informal only", "Formal help"), G)
-YRS <- c(2005, 2010, 2015, 2020, 2025); YCOL <- setNames(c("#C9D6E3", "#9FB3C8", "#7090B0", "#4A7199", "#2F5D8A"), YRS)
+YRS <- c(2005, 2015, 2025); YCOL <- setNames(c("#C9D6E3", "#7090B0", "#2F5D8A"), YRS)                  # compromise agreed 2026-11-09: three years
 BR <- ST[year %in% c(2005, 2025)][, `:=`(yr = factor(year, levels = c(2025, 2005)), grp = factor(GL[as.character(group)], levels = rev(GL)),
                                        lab = fifelse(group == G[4], gsub(".", "\u00b7", sprintf("%.1f", pct), fixed = TRUE), sprintf("%.0f", pct)))]
-GQ <- fread(file.path(T, "P39pw_groups_5y.csv")); GQ[, group := c(`Told no one` = G[1], `Told someone, no help` = G[2], `Informal help only` = G[3], `Formal help` = G[4])[group]]   # 84h: 95% CrIs every five years
+GQ <- fread(file.path(T, "P39pw_groups_5y.csv"))[year %in% YRS]; GQ[, group := c(`Told no one` = G[1], `Told someone, no help` = G[2], `Informal help only` = G[3], `Formal help` = G[4])[group]]   # 84h: 95% CrIs every five years
 GQ[, `:=`(scope = factor(SC[scope], levels = SC), grp = factor(GL[group], levels = rev(GL)), yr = factor(year, levels = rev(YRS)),
           lab = fifelse(group == G[4], gsub(".", "\u00b7", sprintf("%.1f", pct), fixed = TRUE), sprintf("%.0f", pct)))]
 stopifnot(!anyNA(GQ$grp))
 DG <- position_dodge(width = 0.86)
 p1 <- ggplot(GQ, aes(pct, grp, fill = yr)) + geom_col(position = DG, width = 0.84, orientation = "y") +
   geom_errorbar(aes(xmin = pmax(lo, 0), xmax = hi), position = DG, width = 0.45, linewidth = 0.25, colour = "grey25", orientation = "y") +
-  geom_text(aes(x = hi + 1, label = fifelse(year %in% c(2005, 2025), lab, "")), position = DG, hjust = 0, family = FONT, size = 1.9) +   # values for 2005 and 2025 only
-  facet_grid(. ~ scope) + scale_fill_manual(values = YCOL, breaks = as.character(YRS), name = "Young survivors, by year (95% CrI):") +
+  geom_text(aes(x = hi + 1, label = lab), position = DG, hjust = 0, family = FONT, size = 2.1) +   # values for every bar
+  facet_grid(. ~ scope) + scale_fill_manual(values = YCOL, breaks = as.character(YRS), name = "Modelled estimate, by year (95% CrI):") +
   scale_x_continuous(limits = c(0, 80), breaks = seq(0, 75, 25), expand = c(0, 0)) +
   labs(x = "Young survivors (%)", y = NULL) + th +
   theme(axis.text.y = element_text(size = 7), panel.grid.major.y = element_blank(), panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.25),
@@ -80,6 +80,6 @@ line_row <- function(o, ylab, ymax, top = FALSE) {
     theme(strip.text = element_blank(), legend.position = if (top) "top" else "none") + guides(fill = guide_legend(order = 2, nrow = 1), colour = guide_legend(order = 1), shape = guide_legend(order = 3)) +
     (if (o == "formal") theme(axis.text.x = element_text(angle = 45, hjust = 1)) else theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
 }
-P <- p1 / line_row("sought_any", "Sought any help (%)", 100, top = TRUE) / line_row("formal", "Sought formal help (%)", 30) + plot_layout(heights = c(1.35, 1, 0.8))
-ragg::agg_png(file.path(FG, if (TOP == "dot") "fig_trends_popweighted_dot.png" else "fig_trends_popweighted.png"), width = 7.4, height = 7.4, units = "in", res = 300, background = "white"); print(P); invisible(dev.off())
+P <- p1 / line_row("sought_any", "Sought any help (%)", 100, top = TRUE) / line_row("formal", "Sought formal help (%)", 30) + plot_layout(heights = c(1.1, 1, 0.8))
+ragg::agg_png(file.path(FG, if (TOP == "dot") "fig_trends_popweighted_dot.png" else "fig_trends_popweighted.png"), width = 7.4, height = 7.0, units = "in", res = 300, background = "white"); print(P); invisible(dev.off())
 cat(if (TOP == "dot") "fig_trends_popweighted_dot.png" else "fig_trends_popweighted.png", "written\n")
