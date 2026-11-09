@@ -42,12 +42,14 @@ TOP <- Sys.getenv("TOPROW", "bars")                                             
 if (TOP == "dot") {
   DT <- dcast(BR, scope + grp ~ year, value.var = c("pct", "lab")); setnames(DT, c("pct_2005", "pct_2025", "lab_2005", "lab_2025"), c("a", "b", "la", "lb"))
   DT[, `:=`(left = pmin(a, b), right = pmax(a, b), la_h = fifelse(a <= b, 1, 0), lb_h = fifelse(a <= b, 0, 1))]
-  DL <- rbind(BR[year == 2005, .(scope, grp, pct, yr = "2005")], BR[year == 2025, .(scope, grp, pct, yr = "2025")])
+  YRS <- c(2005, 2010, 2015, 2020, 2025)                                            # every five years along the line; values printed for 2005 and 2025
+  DL <- ST[year %in% YRS][, `:=`(yr = factor(year, levels = YRS), grp = factor(GL[as.character(group)], levels = rev(GL)))]
   p1 <- ggplot(DT) + geom_segment(aes(x = a, xend = b, y = grp, yend = grp), colour = "grey70", linewidth = 1.1) +
-    geom_point(data = DL, aes(pct, grp, fill = yr), shape = 21, colour = "white", size = 2.6, stroke = 0.3) +
+    geom_point(data = DL, aes(pct, grp, fill = yr, size = yr), shape = 21, colour = "white", stroke = 0.3) +
     geom_text(aes(x = a, y = grp, label = la), nudge_y = 0.3, family = FONT, size = 2.1, colour = "grey40") +              # 2005 value above its dot
     geom_text(aes(x = b, y = grp, label = lb), nudge_y = -0.3, family = FONT, size = 2.1, colour = "#2F5D8A", fontface = "bold") +   # 2025 value below
-    facet_grid(. ~ scope) + scale_fill_manual(values = c(`2005` = "#9FB3C8", `2025` = "#2F5D8A"), name = "Young survivors, by year:") +
+    facet_grid(. ~ scope) + scale_fill_manual(values = setNames(c("#C9D6E3", "#9FB3C8", "#7090B0", "#4A7199", "#2F5D8A"), YRS), name = "Young survivors, by year:") +
+    scale_size_manual(values = setNames(c(2.6, 1.7, 1.7, 1.7, 2.6), YRS), name = "Young survivors, by year:") +
     scale_x_continuous(limits = c(-6, 76), breaks = seq(0, 75, 25), expand = c(0, 0)) +
     labs(x = "Young survivors (%)", y = NULL) + th +
     theme(axis.text.y = element_text(size = 7), panel.grid.major.y = element_line(colour = "grey94", linewidth = 0.25), panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.25),
