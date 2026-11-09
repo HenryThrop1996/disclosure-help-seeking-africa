@@ -990,6 +990,26 @@ for kind, a, b in SHARP:
         assert tex.count(a) == 1, f"sharpness target found {tex.count(a)} times: {a[:80]}"; tex = tex.replace(a, b)
     else:
         tex, k = re.subn(a, b, tex, flags=re.S); assert k == 1, f"sharpness target found {k} times: {a[:80]}"
+OLIVER = [
+    ("R", r"As a proxy for Sustainable Development Goal \(SDG\) indicator 16\.3\.1, the proportion of victims.*?gave ([\d.]+)\\% to ([\d.]+)\\% \(appendix table~\\ref\{tab:sdgdef\}\)\.",
+          r"Sustainable Development Goal (SDG) indicator 16.3.1 is the proportion of victims of violence in the previous 12 months who reported it to competent authorities (the police, prosecutors and other authorities that investigate crimes) or to officially recognised mechanisms such as chiefs or elders.\\cite{un2015,unodc2024} DHS cannot measure it exactly: it asks whether a woman ever sought help, and from whom, for any violence she experienced, not whether she reported a particular incident in the past year, and it does not record whether a chief or elder is officially recognised. As a proxy, we estimated the percentage of young women with violence in the past 12 months who sought help from the police or from lawyers or courts. Health workers are not competent authorities and were not counted; counting health workers, chiefs and local authorities, or religious and traditional leaders as well gave \1\\% to \2\\% (appendix table~\\ref{tab:sdgdef})."),
+    ("L", r"and helplines). Religious and traditional leaders were informal;",
+          r"and helplines). The three are nested (seeking formal help implies seeking help, and seeking help implies telling someone), and each was analysed among all young women with violence: an odds ratio compares the odds of reaching at least that step of the cascade, not of moving on from the step before. Religious and traditional leaders were informal;"),
+    ("L", r"gave the headline curves and the change between 2005 and 2025",
+          r"a post-stratification of the model estimates to country populations, gave the headline curves and the change between 2005 and 2025"),
+    ("L", r"or each survey by its sample size (appendix table~\ref{tab:popw}).",
+          r"or each survey by its sample size (appendix table~\ref{tab:popw}). These are design-based percentages, not model estimates."),
+    ("L", r"analysed girls aged 15--24 years who reported", r"analysed adolescent girls and young women aged 15--24 years who reported"),
+    ("L", r"young women and girls aged 15--24 years who reported violence", r"adolescent girls and young women aged 15--24 years (DHS and VACS) who reported violence"),
+    ("L", r"No young woman reported", r"No adolescent girl or young woman reported"),
+]
+for kind, a, b in OLIVER:
+    if kind == "L":
+        assert tex.count(a) == 1, f"Oliver edit target found {tex.count(a)} times: {a[:70]}"; tex = tex.replace(a, b)
+    else:
+        tex, k = re.subn(a, b, tex, flags=re.S); assert k == 1, f"Oliver edit target found {k} times: {a[:70]}"
+tex = re.sub(r"(?<!girls and )\byoung women\b", "adolescent girls and young women", tex)       # terminology: adolescent girls and young women (AGYW) aged 15-24
+tex = re.sub(r"(?<!Girls and )\bYoung women\b", "Adolescent girls and young women", tex)
 tex = house_style(tex)
 # keep only cited references in the paper; uncited ones go to references_for_later.tex (they return automatically once cited again)
 _ba, _bb = tex.index("\\begin{thebibliography}"), tex.index("\\end{thebibliography}")
