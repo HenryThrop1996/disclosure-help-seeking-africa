@@ -38,6 +38,21 @@ p1 <- ggplot(BR, aes(pct, grp, fill = yr)) + geom_col(position = position_dodge(
   labs(x = "Young survivors (%)", y = NULL) + th +
   theme(axis.text.y = element_text(size = 7), panel.grid.major.y = element_blank(), panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.25),
         axis.title.x = element_text(size = 7.5))
+TOP <- Sys.getenv("TOPROW", "bars")                                              # "dot": dot plot alternative for the top row (written to *_dot.png)
+if (TOP == "dot") {
+  DT <- dcast(BR, scope + grp ~ year, value.var = c("pct", "lab")); setnames(DT, c("pct_2005", "pct_2025", "lab_2005", "lab_2025"), c("a", "b", "la", "lb"))
+  DT[, `:=`(left = pmin(a, b), right = pmax(a, b), la_h = fifelse(a <= b, 1, 0), lb_h = fifelse(a <= b, 0, 1))]
+  DL <- rbind(BR[year == 2005, .(scope, grp, pct, yr = "2005")], BR[year == 2025, .(scope, grp, pct, yr = "2025")])
+  p1 <- ggplot(DT) + geom_segment(aes(x = a, xend = b, y = grp, yend = grp), colour = "grey70", linewidth = 1.1) +
+    geom_point(data = DL, aes(pct, grp, fill = yr), shape = 21, colour = "white", size = 2.6, stroke = 0.3) +
+    geom_text(aes(x = a, y = grp, label = la), nudge_y = 0.3, family = FONT, size = 2.1, colour = "grey40") +              # 2005 value above its dot
+    geom_text(aes(x = b, y = grp, label = lb), nudge_y = -0.3, family = FONT, size = 2.1, colour = "#2F5D8A", fontface = "bold") +   # 2025 value below
+    facet_grid(. ~ scope) + scale_fill_manual(values = c(`2005` = "#9FB3C8", `2025` = "#2F5D8A"), name = "Young survivors, by year:") +
+    scale_x_continuous(limits = c(-6, 76), breaks = seq(0, 75, 25), expand = c(0, 0)) +
+    labs(x = "Young survivors (%)", y = NULL) + th +
+    theme(axis.text.y = element_text(size = 7), panel.grid.major.y = element_line(colour = "grey94", linewidth = 0.25), panel.grid.major.x = element_line(colour = "grey92", linewidth = 0.25),
+          axis.title.x = element_text(size = 7.5))
+}
 line_row <- function(o, ylab, ymax, top = FALSE) {
   d <- C[outcome == o]; d[, southern := grepl("^Southern", scope)]; ob <- OB[outcome == o]; ob[, hi := pmin(hi, ymax)]
   pb <- PB[outcome == o]; pb[, pred_hi := pmin(pred_hi, ymax)]
@@ -58,5 +73,5 @@ line_row <- function(o, ylab, ymax, top = FALSE) {
     (if (o == "formal") theme(axis.text.x = element_text(angle = 45, hjust = 1)) else theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()))
 }
 P <- p1 / line_row("sought_any", "Sought any help (%)", 100, top = TRUE) / line_row("formal", "Sought formal help (%)", 30) + plot_layout(heights = c(0.95, 1, 0.8))
-ragg::agg_png(file.path(FG, "fig_trends_popweighted.png"), width = 7.4, height = 6.6, units = "in", res = 300, background = "white"); print(P); invisible(dev.off())
-cat("fig_trends_popweighted.png written\n")
+ragg::agg_png(file.path(FG, if (TOP == "dot") "fig_trends_popweighted_dot.png" else "fig_trends_popweighted.png"), width = 7.4, height = 6.6, units = "in", res = 300, background = "white"); print(P); invisible(dev.off())
+cat(if (TOP == "dot") "fig_trends_popweighted_dot.png" else "fig_trends_popweighted.png", "written\n")
