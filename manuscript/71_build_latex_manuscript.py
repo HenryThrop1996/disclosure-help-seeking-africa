@@ -7,7 +7,7 @@ from pathlib import Path
 OL = Path(sys.argv[1]); R = __import__("pathlib").Path(__import__("os").environ["RR"]); T = R / "outputs/tables"; V3 = T / "P33_youth_v3"
 (OL / "figures").mkdir(exist_ok=True)
 shutil.copy(R / "outputs/figures/disclosure_v3/fig1_map_help_seeking.png", OL / "figures/fig1_map_help_seeking.png")   # 61b_fig1_map_forest.R
-for _f in ["fig_trends.png", "fig_cascade_by_type.png", "fig_cascade_forest.png", "fig2_forest_injury_severe.png", "fig3_forest_both_former.png", "figS_prior_predictive.png", "figS_ppc.png", "figS_trend_checks.png", "figS_country_trends_sought_any.png", "figS_trends_adjusted.png", "figS_trends_by_age.png", "figS_trend_splines.png", "fig_trends_regional.png", "fig_trends_popweighted.png"]:   # figure scripts: 61b-61i
+for _f in ["fig_trends.png", "fig_cascade_by_type.png", "fig_cascade_forest.png", "fig2_forest_injury_severe.png", "fig3_forest_both_former.png", "figS_prior_predictive.png", "figS_ppc.png", "figS_trend_checks.png", "figS_country_trends_sought_any.png", "figS_trends_adjusted.png", "figS_trends_by_age.png", "figS_trend_splines.png", "fig_trends_regional.png", "fig_trends_popweighted.png", "fig_trends_countries.png"]:   # figure scripts: 61b-61i
     shutil.copy(R / "outputs/figures/disclosure_v3" / _f, OL / "figures" / _f)
 N = {}                                                                     # every number used, for the independent check
 def put(k, v): N[k] = v; return v
@@ -534,9 +534,9 @@ Young women aged 15--24 years with violence (DHS). Points and bars are survey-we
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{figures/fig_trends_regional.png}
-\caption{\textbf{Partially pooled country trajectories by region, all three outcomes}\\
-Young women aged 15--24 years with violence (DHS). Grey lines are each country's trajectory over its observed survey years (posterior medians from the hierarchical meta-regression of figure~\ref{fig:trends}); the first column shows all countries. Navy lines and bands are the overall or regional mean curve with 95\% credible intervals. Panel text gives the odds ratio per decade (95\% CrI) and the posterior probability of a decline. Southern Africa had no repeated surveys. Logit vertical scale, labelled in percentages; each row has its own range. Layout after Strain et al.\cite{strain2026} Post-hoc presentation of the same model.}
+\includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{figures/fig_trends_countries.png}
+\caption{\textbf{Country trajectories and regional trends in disclosure and help-seeking, 2004--2025}\\
+Young women aged 15--24 years with violence (DHS). Grey lines are each country's fitted trajectory over its survey years, and grey dots are countries with one survey (posterior medians from the hierarchical meta-regression of figure~\ref{fig:trends}); the first column shows all countries. The coloured line and band are the population-weighted regional curve of figure~\ref{fig:trends} (posterior median, 95\% credible interval), with its 2005 and 2025 values printed at each end. The country lines are nearly parallel because the model shares information on slopes across countries (between-country standard deviation of slopes about 0\md{}08 on the log-odds scale per decade), so they do not show which individual countries declined. Southern Africa (dashed) had no repeated surveys. Linear percentage scale from 0; each row has its own range. Layout after Strain et al.\cite{strain2026}}
 \label{fig:trendsregional}
 \end{figure}
 
@@ -921,7 +921,6 @@ PLAIN = [
     (r" \(post-hoc\)", r""),
     (r" \(post-hoc sensitivity analysis\)", r" (sensitivity analysis)"),
     (r" Post-hoc analysis\.\}", r"}"),
-    (r" Post-hoc presentation of the same model\.\}", r"}"),
     (r"In the registered analysis of women of all ages", r"In an analysis of women of all ages"),
     (r"a pre-registered plan with time-stamped amendments; ", r""),
     (r"conceived and designed the study, pre-registered the analyses and made all", r"conceived and designed the study and made all"),
